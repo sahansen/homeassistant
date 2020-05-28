@@ -1,0 +1,113 @@
+automation:
+- id: '1557428425732'
+  alias: Oppdater nedtelling til søppeltømming
+  trigger:
+  - at: 00:01
+    platform: time
+  condition: []
+  action:
+  - data:
+      entity_id: sensor.kalender_soppel_igjen
+    service: homeassistant.update_entity
+  - data:
+      entity_id: sensor.kalender_soppel
+    service: homeassistant.update_entity
+  - data:
+      entity_id: sensor.kalender_soppel_nar
+    service: homeassistant.update_entity
+
+- alias: Varsling om søppeltømming
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: calendar.soppel
+    to: 'on'
+  action:
+  - service: notify.mobile_app_nina_tlf
+    data:
+      title: Søppeltømming
+      message: I dag tømmes {{ state_attr('calendar.soppel', 'message') }}
+  - service: notify.mobile_app_sm_g988b
+    data:
+      title: Søppeltømming
+      message: I dag tømmes {{ state_attr('calendar.soppel', 'message') }}
+
+sensor:
+  - platform: template
+    sensors:
+      bins_out_offset:
+        friendly_name: "Søppel henting"
+        value_template: >
+          {% if as_timestamp(states.calendar.soppel.attributes.start_time) - as_timestamp(strptime(states.sensor.date__time.state, "%Y-%m-%d, %H:%M" ) ) < 21600 and as_timestamp(states.calendar.soppel.attributes.end_time) > as_timestamp(strptime(states.sensor.date__time.state, "%Y-%m-%d, %H:%M" ) ) %}on{% else %}off{% endif %}
+
+      kalender_glass_igjen:
+        friendly_name: "Søppel - Glass"
+        value_template: "{{ (( as_timestamp(strptime(states.calendar.glass.attributes.start_time, '%Y-%m-%dT%H:%M:%S')) - as_timestamp(now()) )/ (3600*24)) | round(0) }}"
+        unit_of_measurement: 'dager'
+
+      kalender_matavfall_igjen:
+        friendly_name: "Søppel - Matavfall"
+        value_template: "{{ (( as_timestamp(strptime(states.calendar.matavfall.attributes.start_time, '%Y-%m-%dT%H:%M:%S')) - as_timestamp(now()) )/ (3600*24)) | round(0) }}"
+        unit_of_measurement: 'dager'
+
+      kalender_restavfall_igjen:
+        friendly_name: "Søppel - Restavfall"
+        value_template: "{{ (( as_timestamp(strptime(states.calendar.restavfall.attributes.start_time, '%Y-%m-%dT%H:%M:%S')) - as_timestamp(now()) )/ (3600*24)) | round(0) }}"
+        unit_of_measurement: 'dager'
+
+      kalender_plast_igjen:
+        friendly_name: "Søppel - Plast"
+        value_template: "{{ (( as_timestamp(strptime(states.calendar.plast.attributes.start_time, '%Y-%m-%dT%H:%M:%S')) - as_timestamp(now()) )/ (3600*24)) | round(0) }}"
+        unit_of_measurement: 'dager'
+
+      kalender_papir_igjen:
+        friendly_name: "Søppel - Papir"
+        value_template: "{{ (( as_timestamp(strptime(states.calendar.papir.attributes.start_time, '%Y-%m-%dT%H:%M:%S')) - as_timestamp(now()) )/ (3600*24)) | round(0) }}"
+        unit_of_measurement: 'dager'
+
+      kalender_soppel_igjen:
+        friendly_name: "Søppel"
+        value_template: "{{ (( as_timestamp(strptime(states.calendar.soppel.attributes.start_time, '%Y-%m-%dT%H:%M:%S')) - as_timestamp(now()) )/ (3600*24)) | round(0) }}"
+        unit_of_measurement: 'dager'
+
+      kalender_glass_nar:
+        friendly_name: "Søppel - Glass når"
+        value_template: >
+          {% set weekday = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'] %}
+          {% set dt = strptime(state_attr('calendar.glass', 'start_time'), '%Y-%m-%d %H:%M:%S') %}
+          {{ weekday[dt.weekday()] }}, {{ dt.day }}
+
+      kalender_matavfall_nar:
+        friendly_name: "Søppel - Matavfall når"
+        value_template: >
+          {% set weekday = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'] %}
+          {% set dt = strptime(state_attr('calendar.matavfall', 'start_time'), '%Y-%m-%d %H:%M:%S') %}
+          {{ weekday[dt.weekday()] }}, {{ dt.day }}
+
+      kalender_restavfall_nar:
+        friendly_name: "Søppel - Restavfall når"
+        value_template: >
+          {% set weekday = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'] %}
+          {% set dt = strptime(state_attr('calendar.restavfall', 'start_time'), '%Y-%m-%d %H:%M:%S') %}
+          {{ weekday[dt.weekday()] }}, {{ dt.day }}
+
+      kalender_plast_nar:
+        friendly_name: "Søppel - Plast når"
+        value_template: >
+          {% set weekday = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'] %}
+          {% set dt = strptime(state_attr('calendar.plast', 'start_time'), '%Y-%m-%d %H:%M:%S') %}
+          {{ weekday[dt.weekday()] }}, {{ dt.day }}
+
+      kalender_papir_nar:
+        friendly_name: "Søppel - Papir når"
+        value_template: >
+          {% set weekday = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'] %}
+          {% set dt = strptime(state_attr('calendar.papir', 'start_time'), '%Y-%m-%d %H:%M:%S') %}
+          {{ weekday[dt.weekday()] }}, {{ dt.day }}
+
+      kalender_soppel_nar:
+        friendly_name: "Søppel når"
+        value_template: >
+          {% set weekday = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'] %}
+          {% set dt = strptime(state_attr('calendar.soppel', 'start_time'), '%Y-%m-%d %H:%M:%S') %}
+          {{ weekday[dt.weekday()] }}, {{ dt.day }}
