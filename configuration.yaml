@@ -1,0 +1,184 @@
+homeassistant:
+  customize: !include customize.yaml
+  packages:
+    ams: !include ams.yaml
+    belysning: !include belysning.yaml
+    diag: !include diag.yaml
+    garasje: !include garasje.yaml
+    kjokken: !include kjokken.yaml
+    heater: !include heater.yaml
+    nina: !include nina.yaml
+    oppdatering: !include oppdatering.yaml
+    soppel: !include soppel.yaml
+    tlf: !include tlf.yaml
+    varsling: !include varsling.yaml
+    vaskerom: !include vaskerom.yaml
+    vekkerklokke: !include vekkerklokke.yaml
+    velkomst: !include velkomst.yaml
+    wifi: !include wifi.yaml
+
+frontend:
+  themes: !include_dir_merge_named themes
+
+hacs:
+  token: !secret hacs
+
+history:
+map:
+sun:  
+person:
+system_health:
+config:
+cloud:
+recorder:
+  db_url: !secret sql
+  exclude:
+    domains:
+      - automation
+      - timer
+    entities:
+      - sensor.vaskemaskin_tid
+      - sensor.torketrommel_tid
+      - sensor.time
+      - sensor.tog_levanger_stasjon
+      - sensor.tog_levanger_stasjon_platform_1
+      - sensor.tog_levanger_stasjon_platform_2
+      - sensor.tog_levanger_stasjon_platform_77902
+      - sensor.tog_levanger_stasjon_platform_77903
+      - sensor.onhub_bytes_received
+      - sensor.onhub_bytes_sent
+      - sensor.onhub_kbyte_sec_received
+      - sensor.onhub_kbyte_sec_sent
+      - sensor.onhub_packets_received
+      - sensor.onhub_packets_sec_received
+      - sensor.onhub_packets_sec_sent
+      - sensor.onhub_packets_sent
+      - sensor.aktiv_effekt
+      - sensor.mqtt_oppetid
+      - sensor.reaktiv_effekt
+
+updater: 
+discovery: 
+conversation: 
+mobile_app:
+
+tts:
+  platform: google_translate
+  cache: true
+  cache_dir: /tmp/tts
+  time_memory: 300
+  service_name: google_say
+  language: 'no'
+  
+breaking_changes: 
+air_quality:
+  - platform: norway_air
+  
+binary_sensor:
+  - platform: huesensor
+  - platform: template
+    sensors:
+      noen_hjemme:
+        value_template: >-
+          {{ is_state('device_tracker.life360_nina', 'home')
+          or is_state('device_tracker.life360_stig_are', 'home') }}
+  
+group: !include groups.yaml 
+automation: !include automations.yaml 
+script: !include scripts.yaml 
+sensor: !include sensors.yaml
+
+tibber:
+  access_token: !secret tibber
+
+media_player:    
+  - platform: philips_2014
+    name: Philips TV
+    host: 192.168.86.69
+    mac: 30:10:B3:AF:9C:B1
+
+  - platform: xboxone
+    device: !secret xbox
+    name: Xbox One
+
+  - platform: denonavr
+    host: 192.168.86.157
+
+fibaro:
+  gateways:
+    - url: http://192.168.86.49/api/
+      username: !secret email
+      password: !secret stdpass
+      plugins: true
+
+notify:
+  - platform: html5
+    name: oss
+    vapid_pub_key: !secret notify_pub
+    vapid_prv_key: !secret notify_prv
+    vapid_email: !secret email
+
+google:
+  client_id: !secret google_client_id
+  client_secret: !secret google_client_secret
+
+netatmo:
+  client_id: !secret netatmo_api
+  client_secret: !secret netatmo_secret
+
+life360:
+  accounts:
+    username: stig-are@sahansen.com
+    password: !secret mqtt
+  show_as_state:
+    - driving
+    - moving
+
+climate:
+  - platform: sensibo
+    api_key: !secret sensiboapi
+
+vacuum:
+  - platform: xiaomi_miio
+    host: 192.168.86.22
+    token: !secret xiaomi
+
+home_connect:
+  client_id: !secret homeconnect_id
+  client_secret: !secret homeconnect_secret
+
+camera:
+  - platform: generic
+    still_image_url: http://192.168.86.97/tmpfs/auto.jpg
+    stream_source: rtsp://192.168.86.97:554/11
+    username: admin
+    password: !secret stdpass
+    name: Inngangsdør
+
+customizer:
+  custom_ui: local
+
+speedtestdotnet:
+  scan_interval:
+    hours: 5
+  monitored_conditions:
+    - ping
+    - download
+    - upload
+
+#remote:
+#  - platform: huesensor
+#  - platform: harmony
+#    name: harmony_hub
+#    host: 192.168.86.33
+
+#spotcast:
+#  username: !secret spotify_id
+#  password: !secret mqtt
+
+withings:
+  client_id: !secret withings_id
+  client_secret: !secret withings_sec
+  profiles:
+    - Stig-Are
+    - Nina
