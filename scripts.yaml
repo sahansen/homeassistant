@@ -1,0 +1,17 @@
+sovemodus:
+  sequence:
+  - service: light.turn_off
+    data:
+      entity_id: light.spisestue
+  - service: light.turn_off
+    data:
+      entity_id: light.kjellerstue
+  - service: media_player.turn_off
+    data:
+      entity_id: media_player.chromecast_stue
+  - service: tts.google_say
+    entity_id: media_player.home_spisestue
+    data_template:
+      message: God natt.
+      cache: false
+      language: 'no'
