@@ -1,0 +1,403 @@
+automation:
+- alias: Lys ved solnedgang
+  trigger:
+  - platform: state
+    entity_id: input_boolean.utebelysning
+    from: "off"
+    to: "on"
+  - platform: sun
+    event: sunset
+  condition: []
+  action:
+  - service: input_boolean.turn_on
+    data:
+      entity_id: input_boolean.utebelysning
+  - service: light.turn_on
+    data:
+      entity_id: light.nr_4
+      transition: 1
+      brightness_pct: 90
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.nr_3
+      transition: 1
+      brightness_pct: 90
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.nr_2
+      transition: 1
+      brightness_pct: 90
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.nr_1
+      transition: 1
+      brightness_pct: 90
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.ved_garasjeport
+      transition: 1
+      brightness_pct: 80
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.garasje_v
+      transition: 1
+      brightness_pct: 70
+  - service: light.turn_on
+    data:
+      entity_id: light.garasje_h
+      transition: 1
+      brightness_pct: 70
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.ved_vaskeromdor
+      transition: 1
+      brightness_pct: 80
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.ved_ytterdor
+      transition: 1
+      brightness_pct: 80
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.terrasse_v_vindu
+      transition: 1
+      brightness_pct: 65
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.terrasse_v_dor
+      transition: 1
+      brightness_pct: 65
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.terrasse
+      transition: 1
+      brightness_pct: 65
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.hue_outdoor_pedestal_2
+      transition: 1
+      brightness_pct: 95
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.hue_outdoor_pedestal_1
+      transition: 1
+      brightness_pct: 95
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.hue_outdoor_pedestal_1_2
+      transition: 1
+      brightness_pct: 95
+
+- alias: Lys av ved soloppgang
+  trigger:
+  - platform: state
+    entity_id: input_boolean.utebelysning
+    from: "on"
+    to: "off"
+  - platform: sun
+    event: sunrise
+  condition: []
+  action:
+  - service: input_boolean.turn_off
+    data:
+      entity_id: input_boolean.utebelysning
+  - service: light.turn_off
+    data:
+      entity_id: light.nr_4
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.nr_3
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.nr_2
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.nr_1
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.ved_garasjeport
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.garasje_v
+      transition: 1
+  - service: light.turn_off
+    data:
+      entity_id: light.garasje_h
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.ved_vaskeromdor
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.ved_ytterdor
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.dimmable_light_1
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.terrasse_v_vindu
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.terrasse_v_dor
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.terrasse
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.hue_outdoor_pedestal_2
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.hue_outdoor_pedestal_1
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_off
+    data:
+      entity_id: light.hue_outdoor_pedestal_1_2
+      transition: 1
+
+- alias: Lys av i stuer hvis ingen hjemme
+  trigger:
+  - at: '23:05:35'
+    platform: time
+  condition:
+  - condition: state
+    entity_id: binary_sensor.noen_hjemme
+    state: 'off'
+  action:
+  - service: light.turn_off
+    data:
+      entity: light.spisestue
+  - service: light.turn_off
+    data:
+      entity: light.kjellerstue
+
+- alias: Lys på i stuer hvis ingen hjemme
+  trigger:
+  - platform: sun
+    event: sunset
+  condition:
+  - condition: state
+    entity_id: binary_sensor.noen_hjemme
+    state: 'off'
+  action:
+  - service: light.turn_off
+    data:
+      entity: light.spisestue
+  - service: light.turn_off
+    data:
+      entity: light.kjellerstue
+
+- alias: Lystenning
+  trigger:
+  - platform: state
+    entity_id: input_boolean.julebelysning
+    from: "off"
+    to: "on"
+  condition: []
+  action:
+  - service: input_boolean.turn_on
+    data:
+      entity_id: input_boolean.utebelysning
+  - service: light.turn_on
+    data:
+      entity_id: light.nr_4
+      transition: 1
+      brightness_pct: 90
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.nr_3
+      transition: 1
+      brightness_pct: 90
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.nr_2
+      transition: 1
+      brightness_pct: 90
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.nr_1
+      transition: 1
+      brightness_pct: 90
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.ved_garasjeport
+      transition: 1
+      brightness_pct: 80
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.garasje_h
+      transition: 1
+      brightness_pct: 70
+  - service: light.turn_on
+    data:
+      entity_id: light.garasje_v
+      brightness_pct: 70
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.ved_vaskeromdor
+      brightness_pct: 80
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.ved_ytterdor
+      transition: 1
+      brightness_pct: 80
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.kjellerstue
+      brightness_pct: 60
+      transition: 1
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.spisestue
+      transition: 1
+      brightness_pct: 45
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.huset_tre_i_innkjorsel_197
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.terrasse_v_vindu
+      transition: 1
+      brightness_pct: 65
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.terrasse_v_dor
+      transition: 1
+      brightness_pct: 65
+  - delay: 
+      milliseconds: 300
+  - service: light.turn_on
+    data:
+      entity_id: light.terrasse
+      transition: 1
+      brightness_pct: 65
+
+- alias: Varsel om endring i strømtrekk - Julebelysning i innkjørsel
+  trigger:
+  - below: '16'
+    entity_id: sensor.forbruk_julelys_innkjorsel
+    platform: numeric_state
+  - above: '17'
+    entity_id: sensor.forbruk_julelys_innkjorsel
+    platform: numeric_state
+  condition:
+  - condition: state
+    entity_id: light.huset_tre_i_innkjorsel_197
+    state: 'on'
+  action:
+  - service: tts.google_say
+    entity_id: media_player.home_spisestue
+    data_template:
+      message: Endring i strømtrekk på julebelysning i innkjørsel, slår av lys.
+      cache: false
+      language: 'no'
+  - service: notify.telegram
+    data:
+      title: 'Endring i strømtrekk'
+      message: "Strømtrekket på juletrebelysningen i innkjørsel har endret seg og er nå {{states('sensor.forbruk_julelys_innkjorsel')}}W, slår av lysene."
+  - service: light.turn_off
+    entity_id: light.huset_tre_i_innkjorsel_197
+
+input_boolean:
+  utebelysning:
+    name: Utebelysning sekvens
+    icon: mdi:lightbulb
+  julebelysning:
+    name: Julebelysning sekvens
+    icon: mdi:lightbulb
+
+light:
+  - platform: group
+    name: Soveroms gruppe
+    entities:
+      - light.dimmable_light_1_5
+      - light.seng
