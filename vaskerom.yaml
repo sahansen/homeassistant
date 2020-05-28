@@ -1,0 +1,347 @@
+automation:
+- alias: Vaskemaskin - Endre status til vasker ved høyt strømtrekk
+  initial_state: 'on'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.forbruk_vaskemaskin
+    above: 5
+  condition:
+  - condition: state
+    entity_id: input_select.vaskemaskin_status
+    state: Standby
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.vaskemaskin_status
+      option: Vasker
+  - service: input_datetime.set_datetime
+    entity_id: input_datetime.vaskemaskin_start
+    data_template:
+      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+- alias: Vaskemaskin - Endre status til standby ved ingen strømtrekk
+  initial_state: 'on'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.forbruk_vaskemaskin
+    below: 1
+  condition:
+  - condition: state
+    entity_id: input_select.vaskemaskin_status
+    state: Ferdig
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.vaskemaskin_status
+      option: Standby
+- alias: Vaskemaskin - Endre status til ferdig ved redusert strømforbruk
+  initial_state: 'on'
+  trigger:
+  - below: '4'
+    above: '1'
+    for:
+      seconds: 3
+    entity_id: sensor.forbruk_vaskemaskin
+    platform: numeric_state
+  condition:
+  - condition: state
+    entity_id: input_select.vaskemaskin_status
+    state: Vasker
+  action:
+  - service: tts.google_say
+    entity_id: media_player.home_spisestue
+    data_template:
+      message: Vaskemaskinen er ferdig!
+      cache: false
+      language: 'no'
+  - data:
+      entity_id: input_select.vaskemaskin_status
+      option: Ferdig
+    service: input_select.select_option
+  - data:
+      title: Vaskerom
+      message: Vaskemaskin e ferdig!
+      data:
+        actions:
+          - action: "paminnsenere_vask"
+            title: "Utsett 30 min."
+    service: notify.mobile_app_nina_tlf
+  - data:
+      title: Vaskerom
+      message: Vaskemaskin e ferdig!
+      data:
+        actions:
+          - action: "paminnsenere_vask"
+            title: "Utsett 30 min."
+    service: notify.mobile_app_sm_g988b
+- alias: Vaskemaskin - Påminn senere
+  trigger:
+    platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: paminnsenere_vask
+  action:
+    - service: timer.start
+      entity_id: timer.paminnsenere_vask
+- id: Vaskemaskin - Påminnelse
+  alias: 'Påminn senere'
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.paminnsenere_vask
+  action:
+  - service: notify.mobile_app_nina_tlf
+    data:
+      title: Vaskerom
+      message: "Tøm vaskemaskin"
+      data:
+        actions:
+          - action: "paminnsenere_vask"
+            title: "Utsett 30 min"
+  - service: notify.mobile_app_sm_g988b
+    data:
+      title: Vaskerom
+      message: "Tøm vaskemaskin"
+      data:
+        actions:
+          - action: "paminnsenere_vask"
+            title: "Utsett 30 min"
+- alias: Vaskemaskin - Brukt tid
+  trigger:
+    platform: time_pattern
+    seconds: '*'
+  condition:
+    condition: state
+    entity_id: input_select.vaskemaskin_status
+    state: 'Vasker'
+  action:
+    service: homeassistant.update_entity
+    entity_id: sensor.vaskemaskin_tid
+
+- alias: Tørketrommel - Endre status til tørker ved høyt strømtrekk
+  initial_state: 'on'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.forbruk_torketrommel
+    above: 10
+  condition:
+  - condition: state
+    entity_id: input_select.torketrommel_status
+    state: Standby
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.torketrommel_status
+      option: Tørker
+  - service: input_datetime.set_datetime
+    entity_id: input_datetime.torketrommel_start
+    data_template:
+      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+- alias: Tørketrommel - Endre status til standby ved redusert strømforbruk
+  initial_state: 'on'
+  trigger:
+  - below: '3'
+    entity_id: sensor.forbruk_torketrommel
+    platform: numeric_state
+  condition:
+  - condition: state
+    entity_id: input_select.torketrommel_status
+    state: Tørker
+  action:
+  - service: tts.google_say
+    entity_id: media_player.home_spisestue
+    data_template:
+      message: Tørketrommelen er ferdig!
+      cache: false
+      language: 'no'
+  - data:
+      entity_id: input_select.torketrommel_status
+      option: Standby
+    service: input_select.select_option
+  - data:
+      message: Tørketrommeln e ferdig!
+      title: Vaskerom
+    service: notify.mobile_app_nina_tlf
+  - data:
+      message: Tørketrommeln e ferdig!
+      title: Vaskerom
+    service: notify.mobile_app_sm_g988b
+- alias: Tørketrommel - Brukt tid
+  trigger:
+    platform: time_pattern
+    seconds: '*'
+  condition:
+    condition: state
+    entity_id: input_select.torketrommel_status
+    state: 'Tørker'
+  action:
+    service: homeassistant.update_entity
+    entity_id: sensor.torketrommel_tid
+
+- alias: Tørketrommel - Start vifte
+  trigger:
+  - entity_id: input_select.torketrommel_status
+    platform: state
+    from: 'Standby'
+    to: 'Tørker'
+  condition: []
+  action:
+  - service: switch.turn_on
+    data:
+      entity_id: switch.vaskerom_avtrekksvifte_175
+
+- alias: Tørketrommel - Stopp vifte
+  trigger:
+  - entity_id: input_select.torketrommel_status
+    platform: state
+    from: 'Tørker'
+    to: 'Standby'
+    for:
+      minutes: 20
+  condition: []
+  action:
+  - service: switch.turn_off
+    data:
+      entity_id: switch.vaskerom_avtrekksvifte_175
+
+- alias: brannalarm vaskerom
+  trigger:
+  - entity_id: binary_sensor.vaskerom_roykvasler_36
+    platform: state
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: switch.turn_off
+    data:
+      entity_id: switch.vaskerom_torketrommel
+  - service: switch.turn_off
+    data:
+      entity_id: switch.vaskerom_vaskemaskin
+  - service: switch.turn_on
+    data:
+      entity_id: switch.vaskerom_avtrekksvifte_175
+
+- id: '1549675365377'
+  alias: Avtrekksvifte Auto På
+  trigger:
+  - above: '52'
+    entity_id: sensor.vaskerom_fuktighet_136
+    platform: numeric_state
+  condition: []
+  action:
+  - data:
+      entity_id: switch.vaskerom_avtrekksvifte_175
+    service: switch.turn_on
+  - entity_id: input_boolean.fan_triggered
+    service: input_boolean.turn_on
+
+- alias: Avtrekksvifte Auto Av
+  trigger:
+  - below: '48'
+    entity_id: sensor.vaskerom_fuktighet_136
+    platform: numeric_state
+  condition:
+  - condition: state
+    entity_id: input_boolean.fan_triggered
+    state: 'on'
+  action:
+  - data:
+      entity_id: switch.vaskerom_avtrekksvifte_175
+    service: switch.turn_off
+  - entity_id: input_boolean.fan_triggered
+    service: input_boolean.turn_off
+
+- alias: Avtrekksvifte Av - Manuell
+  trigger:
+  - entity_id: switch.vaskerom_avtrekksvifte_175
+    platform: state
+    from: 'off'
+    to: 'on'
+    for:
+      minutes: 30
+  condition:
+  - condition: state
+    entity_id: input_boolean.fan_triggered
+    state: 'off'
+  action:
+  - data:
+      entity_id: switch.vaskerom_avtrekksvifte_175
+    service: switch.turn_off
+
+input_select:
+  vaskemaskin_status:
+    name: Vaskemaskin status
+    options:
+      - Vasker
+      - Ferdig
+      - Standby
+    initial: Standby
+  torketrommel_status:
+    name: Tørketrommel status
+    options:
+      - Tørker
+      - Standby
+    initial: Standby
+
+sensor:
+- platform: template
+  sensors:
+    forbruk_avtrekksvifte:
+      friendly_name: "Avtrekksvifte"
+      unit_of_measurement: 'W'
+      value_template: "{{ state_attr('switch.vaskerom_avtrekksvifte_175', 'current_power_w') }}"
+
+    batteri_vaskerom:
+      friendly_name: "Vaskerom"
+      unit_of_measurement: '%'
+      value_template: "{{ state_attr('binary_sensor.vaskerom_35_0_1_37', 'battery_level') }}"
+      
+    batteri_vaskerommulti:
+      friendly_name: "Vaskerom - Multisensor"
+      unit_of_measurement: '%'
+      value_template: "{{ state_attr('binary_sensor.vaskerom_bevegelse_133', 'battery_level') }}"
+      
+    batteri_vaskeromlekk:
+      friendly_name: "Vaskerom"
+      unit_of_measurement: '%'
+      value_template: "{{ state_attr('binary_sensor.vaskerom_lekkasje_33', 'battery_level') }}"
+
+    forbruk_vaskemaskin:
+      friendly_name: "Vaskemaskin"
+      unit_of_measurement: 'W'
+      value_template: "{{ state_attr('switch.vaskerom_vaskemaskin', 'current_power_w') }}"
+
+    forbruk_torketrommel:
+      friendly_name: "Tørketrommel"
+      unit_of_measurement: 'W'
+      value_template: "{{ state_attr('switch.vaskerom_torketrommel', 'current_power_w') }}"
+
+    forbruk_vaskerom:
+      friendly_name: "Vaskerom"
+      unit_of_measurement: 'W'
+      value_template: "{{ state_attr('switch.vaskerom_vaskemaskin', 'current_power_w') + state_attr('switch.vaskerom_torketrommel', 'current_power_w') + state_attr('switch.vaskerom_avtrekksvifte_175', 'current_power_w') }}"
+
+    vaskemaskin_tid:
+      value_template: "{{ (as_timestamp(now()) - state_attr('input_datetime.vaskemaskin_start', 'timestamp')) |timestamp_custom('%H:%M:%S', false) }}"
+
+    torketrommel_tid:
+      value_template: "{{ (as_timestamp(now()) - state_attr('input_datetime.torketrommel_start', 'timestamp')) |timestamp_custom('%H:%M:%S', false) }}"
+
+timer:
+  paminnsenere_vask:
+    duration: '00:30:00'
+
+input_datetime:
+  vaskemaskin_start:
+    has_date: true
+    has_time: true
+  torketrommel_start:
+    has_date: true
+    has_time: true
+
+input_boolean:
+  fan_triggered:
+    name: Avtrekksvifte På - Auto
+    icon: mdi:fan
