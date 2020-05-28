@@ -208,27 +208,27 @@
                 
       kalender_nina:
         friendly_name: "Kalender"
-        value_template: "{{ state_attr('calendar.nina_cathrinhotmailcom', 'message') }}" 
+        value_template: "{{ state_attr('calendar.nina', 'message') }}" 
       
       kalender_stigare:
         friendly_name: "Kalender"
-        value_template: "{{ state_attr('calendar.stigarehansengmailcom', 'message') }}" 
+        value_template: "{{ state_attr('calendar.stigare', 'message') }}" 
   
       kalender_nina_start:
         friendly_name: "Starter"
-        value_template: "{{ strptime(states.calendar.nina_cathrinhotmailcom.attributes.start_time, '%Y-%m-%d %H:%M:%S').strftime('%H:%M - %d. %b') }}" 
+        value_template: "{{ strptime(states.calendar.nina.attributes.start_time, '%Y-%m-%d %H:%M:%S').strftime('%H:%M - %d. %b') }}" 
       
       kalender_stigare_start:
         friendly_name: "Starter"
-        value_template: "{{ strptime(states.calendar.stigarehansengmailcom.attributes.start_time, '%Y-%m-%d %H:%M:%S').strftime('%H:%M - %d. %b') }}" 
+        value_template: "{{ strptime(states.calendar.stigare.attributes.start_time, '%Y-%m-%d %H:%M:%S').strftime('%H:%M - %d. %b') }}" 
   
       kalender_nina_stopp:
         friendly_name: "Avslutter"
-        value_template: "{{ strptime(states.calendar.nina_cathrinhotmailcom.attributes.end_time, '%Y-%m-%d %H:%M:%S').strftime('%H:%M - %d. %b') }}" 
+        value_template: "{{ strptime(states.calendar.nina.attributes.end_time, '%Y-%m-%d %H:%M:%S').strftime('%H:%M - %d. %b') }}" 
       
       kalender_stigare_stopp:
         friendly_name: "Avslutter"
-        value_template: "{{ strptime(states.calendar.stigarehansengmailcom.attributes.end_time, '%Y-%m-%d %H:%M:%S').strftime('%H:%M - %d. %b') }}" 
+        value_template: "{{ strptime(states.calendar.stigare.attributes.end_time, '%Y-%m-%d %H:%M:%S').strftime('%H:%M - %d. %b') }}" 
 
       media_stue:
         friendly_name: "Media stue"
@@ -247,28 +247,3 @@
     name: Google Fit
     client_id: !secret google_client_id
     client_secret: !secret google_client_secret
-  - platform: rest
-    resource: "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=(Confirmed%20%3E%200)%20AND%20(Country_Region%3D%27Norway%27)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc&outSR=102100&resultOffset=0&resultRecordCount=250&cacheHint=true"
-    name: Coronavirus antall syke
-    value_template: "{{ value_json.features[0].attributes.Confirmed }}"
-
-  - platform: rest
-    resource: "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=(Confirmed%20%3E%200)%20AND%20(Country_Region%3D%27Norway%27)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc&outSR=102100&resultOffset=0&resultRecordCount=250&cacheHint=true"
-    name: Coronavirus antall døde
-    value_template: "{{ value_json.features[0].attributes.Deaths }}"
-
-  - platform: rest
-    resource: "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=(Confirmed%20%3E%200)%20AND%20(Country_Region%3D%27Norway%27)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc&outSR=102100&resultOffset=0&resultRecordCount=250&cacheHint=true"
-    name: Coronavirus antall friske igjen
-    value_template: "{{ value_json.features[0].attributes.Recovered }}"
-
-  - platform: rest
-    resource: "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=(Confirmed%20%3E%200)%20AND%20(Country_Region%3D%27Austria%27)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc&outSR=102100&resultOffset=0&resultRecordCount=250&cacheHint=true"
-    name: Coronavirus siste update
-    value_template: "{{ value_json.features[0].attributes.Last_Update |replace ('000', '') | int | timestamp_custom('%H:%M %d.%m.%Y')}}"
-
-  - platform: scrape
-    resource: https://www.ishavskraft.no/privat/dagens-strompris
-    select: "#spotpris_omrade4_liste_dagens"
-    name: Ishavskraft
-    unit_of_measurement: Kr.
