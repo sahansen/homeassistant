@@ -1,0 +1,201 @@
+automation:
+  - id: garasje_åpnet
+    alias: 'Garasjeport åpnet'
+    trigger:
+      - platform: state
+        entity_id: cover.garage_door
+        to: 'open'
+    condition:
+      condition: state
+      entity_id: cover.garage_door
+      state: 'open'
+    action:
+      - service: timer.start
+        entity_id: timer.garasjeport
+
+  - id: garasje_lukket
+    alias: 'Garasjeport lukket'
+    trigger:
+      - platform: state
+        entity_id: cover.garage_door
+        to: 'closed'
+    action:
+      - service: timer.cancel
+        entity_id:  timer.garasjeport
+
+  - id: garasje_varsel
+    alias: 'Garasjeport varsel'
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.garasjeport
+    condition:
+      condition: state
+      entity_id: cover.garage_door
+      state: 'open'
+    action:
+      - service: tts.google_say
+        entity_id: media_player.home_spisestue
+        data_template:
+          message: Garasjeporten er enda åpen
+          cache: false
+          language: 'no'
+      - service: notify.mobile_app_sm_g988b
+        data:
+          message: "Garasjeporten er enda åpen!"
+          data:
+            actions:
+              - action: "lukkport"
+                title: "Lukk port"
+      - service: timer.start
+        entity_id: timer.garasjeport
+  - alias: Lukk port
+    trigger:
+      platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: lukkport
+    action:
+      - service: cover.close_cover
+        entity_id: cover.garage_door
+
+  - id: garasjeport_varsel_ingen_hjemme
+    alias: 'Motorvarmer varsel - Ingen hjemme'
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.noen_hjemme
+        to: 'off'
+        for: 00:05:00
+    condition:
+      condition: state
+      entity_id: cover.garage_door
+      state: 'open'
+    action:
+      - data:
+          message: Garasjeport er åpen selvom ingen er hjemme!
+        service: notify.mobile_app_nina_tlf
+      - data:
+          message: Garasjeport er åpen selvom ingen er hjemme!
+        service: notify.mobile_app_sm_g988b
+
+cover:
+  - platform: template
+    covers:
+      garage_door:
+        friendly_name: "Garasjeport"
+        value_template: '{{ is_state("binary_sensor.garasje_garasjeport_145", "on") }}'
+        open_cover:
+          service: script.open_garage_door
+        close_cover:
+          service: script.close_garage_door
+        stop_cover:
+          service: script.stop_garage_door
+        icon_template: >-
+          {% if is_state('binary_sensor.garasje_garasjeport_145', 'off') %}
+          mdi:garage
+          {% else %}
+          mdi:garage-open
+          {% endif %}
+
+sensor:
+  - platform: mqtt
+    state_topic: "torquephonebarometer"
+    unit_of_measurement: mbar
+    name: Bil - Barometer
+
+  - platform: mqtt
+    state_topic: "torquevehiclerpm"
+    unit_of_measurement: rpm
+    name: Bil - RPM
+
+  - platform: mqtt
+    state_topic: "torquevehiclemafrate"
+    unit_of_measurement: g/s
+    name: Bil - Mass Air Flow Rate
+
+  - platform: mqtt
+    state_topic: "torquevehiclecoolant"
+    unit_of_measurement: grader
+    name: Bil - Kjøleveske Temp
+
+  - platform: mqtt
+    state_topic: "torqueobdvoltage"
+    unit_of_measurement: V
+    name: Bil - Spenning
+
+  - platform: mqtt
+    state_topic: "torquevehiclevacuum"
+    unit_of_measurement: psi
+    name: Bil - Vacuum
+
+  - platform: mqtt
+    state_topic: "torquevehiclespeed"
+    unit_of_measurement: km/t
+    name: Bil - OBD Hastighet
+
+  - platform: mqtt
+    state_topic: "torquephonespeed"
+    unit_of_measurement: km/t
+    name: Bil - GPS Hastighet
+
+  - platform: mqtt
+    state_topic: "torquevehicleintake"
+    unit_of_measurement: grader
+    name: Bil - Inntaks temp
+
+script:
+  open_garage_door:
+    sequence:
+    - data:
+        entity_id: switch.garasje_portapner_220
+      service: switch.turn_on
+    - delay: 00:00:02
+    - data:
+        entity_id: switch.garasje_portapner_220
+      service: switch.turn_off
+    - data:
+        message: Garasjeport åpnet via smarthus
+      service: notify.mobile_app_nina_tlf
+    - data:
+        message: Garasjeport åpnet via smarthus
+      service: notify.mobile_app_sm_g988b
+  close_garage_door:
+    sequence:
+    - data:
+        entity_id: switch.garasje_portapner_220
+      service: switch.turn_on
+    - delay: 00:00:02
+    - data:
+        entity_id: switch.garasje_portapner_220
+      service: switch.turn_off
+  stop_garage_door:
+    sequence:
+    - data:
+        entity_id: switch.garasje_portapner_220
+      service: switch.turn_on
+    - delay: 00:00:02
+    - data:
+        entity_id: switch.garasje_portapner_220
+      service: switch.turn_off
+  tilt_garage_door:
+    sequence:
+    - service: switch.turn_on
+      data:
+        entity_id: switch.garasje_portapner_220
+    - delay: 00:00:02
+    - service: switch.turn_off
+      data:
+        entity_id: switch.garasje_portapner_220
+    - delay: 00:00:02
+    - service: switch.turn_on
+      data:
+        entity_id: switch.garasje_portapner_220
+    - delay: 00:00:02
+    - service: switch.turn_off
+      data:
+        entity_id: switch.garasje_portapner_220
+        
+timer:    
+  garasjeport:
+    duration: '00:30:00'
