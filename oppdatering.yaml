@@ -1,0 +1,94 @@
+alert:
+  ha_oppdatering_tilgjengelig:
+    name: Home Assistant oppdatering tilgjengelig
+    entity_id: binary_sensor.updater
+    state: 'on'
+    can_acknowledge: false
+    repeat: 
+    - 5
+    - 360
+    skip_first: true
+    title: 'Home Assistant oppdatering tilgjengelig'
+    message: "Ny versjon: {{ state_attr('binary_sensor.updater', 'newest_version') }}. Versjon installert: {{ states('sensor.current_version') }}"
+    notifiers:
+    - 'mobile_app_sm_g988b'
+    data:
+      tag: 'ha-update-available'
+      url: 'http://hassio.local/hassio/addon/core_check_config'
+      ttl: 21600
+
+  supervisor_oppdatering_tilgjendelig:
+    name: Supervisor oppdatering tilgjengelig
+    entity_id: binary_sensor.updater_supervisor
+    state: 'on'
+    can_acknowledge: false
+    repeat: 360
+    title: 'Supervisor oppdatering tilgjengelig'
+    message: "New version is {{ state_attr('sensor.supervisor_oppdatering', 'newest_version') }}. Currently on {{ state_attr('sensor.supervisor_oppdatering', 'current_version') }}"
+    notifiers:
+    - 'mobile_app_sm_g988b'
+    data:
+      tag: 'supervisor-update-available'
+      url: 'http://hassio.local/hassio/dashboard'
+      ttl: 21600
+
+  hacs_oppdatering_tilgjengelig:
+    name: HACS oppdatering
+    entity_id: binary_sensor.updater_hacs
+    state: 'on'
+    can_acknowledge: false
+    repeat: 360
+    title: "oppdateringer tilgjengelig: {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs') | int > 1 %}s{% endif %}"
+    message: ""
+    notifiers:
+      - 'mobile_app_sm_g988b'
+    data:
+      tag: 'hacs-update-available'
+      url: 'http://hassio.local/hacs/installed'
+      ttl: 21600
+
+  addon_oppdatering_tilgjengelig:
+    name: Addons oppdateringer
+    entity_id: binary_sensor.updater_addons
+    state: 'on'
+    can_acknowledge: false
+    repeat: 360
+    title: "Oppdatering tilgjengelig for {{ states('sensor.supervisor_oppdatering') }} HA addon{% if states('sensor.supervisor_oppdatering') | int > 1 %}s{% endif %}"
+    message: ""
+    notifiers:
+    - 'mobile_app_sm_g988b'
+    data:
+      tag: 'addon-update-available'
+      url: 'http://hassio.local/hassio/dashboard'
+      ttl: 21600
+
+sensor:
+  - platform: command_line
+    name: Supervisor oppdatering
+    command: 'curl http://supervisor/supervisor/info -H "Authorization: Bearer $(printenv SUPERVISOR_TOKEN)" | jq ''{"newest_version":.data.version_latest,"current_version":.data.version,"addons":[.data.addons[] | select(.version != .installed)]}'''
+    value_template: "{{ value_json.addons | length }}"
+    json_attributes:
+    - newest_version
+    - current_version
+    - addons
+
+  - platform: template
+    sensors:
+      updater_supervisor:
+        friendly_name: 'Oppdatering - Supervisor'
+        entity_id:
+          - sensor.supervisor_oppdatering
+        value_template: "{{ state_attr('sensor.supervisor_oppdatering', 'current_version') != state_attr('sensor.supervisor_oppdatering', 'newest_version') }}"
+        availability_template: "{{ (states('sensor.supervisor_oppdatering') | int(-1)) > -1 }}"
+
+      updater_hacs:
+        friendly_name: 'Oppdatering - HACS'
+        entity_id:
+          - sensor.hacs
+        value_template: "{{ states('sensor.hacs') | int > 0 }}"
+
+      updater_addons:
+        friendly_name: 'Oppdatering - Addons'
+        entity_id:
+          - sensor.supervisor_oppdatering
+        value_template: "{{ states('sensor.supervisor_oppdatering') | int > 0 }}"
