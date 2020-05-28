@@ -1,0 +1,112 @@
+sensor:
+  - platform: template
+    sensors:
+      nina_tlf_batt:
+        friendly_name: Batteri
+        unit_of_measurement: '%'
+        value_template: '{{ state_attr("device_tracker.life360_nina","battery") }}'
+        icon_template: >-
+          {% set battery_level = state_attr("device_tracker.life360_nina","battery")|int('unknown') %}
+          {% set battery_round = (battery_level|int / 10)|int * 10 %}
+          {% if battery_level == 'unknown' %}
+            mdi:battery-unknown
+          {% else %}
+            {% if battery_round >= 100 %}
+              mdi:battery
+            {% elif battery_round > 0 %}
+              mdi:battery-{{ battery_round }}
+            {% else %}
+              mdi:battery-alert
+            {% endif %}
+          {% endif %}
+      nina_tlf_status:
+        friendly_name: Status
+        value_template: >-
+          {% set battery_level = state_attr("device_tracker.life360_nina","battery")|int('unknown') %}
+          {% set battery_round = (battery_level|int / 10)|int * 10 %}
+          {% set charging = is_state("binary_sensor.nina_batt_oke","on") %}
+          {% set discharging = is_state("binary_sensor.nina_batt_oke","on") %}
+          {% if charging %}
+            Lader
+          {% else %}
+            {% if battery_round >= 100 %}
+              Fullt
+            {% elif battery_round > 0 %}
+              Frakoblet
+            {% else %}
+              Lavt
+            {% endif %}
+          {% endif %}
+        icon_template: >-
+          {% set battery_level = state_attr("device_tracker.life360_nina","battery")|int('unknown') %}
+          {% set battery_round = (battery_level|int / 10)|int * 10 %}
+          {% set charging = is_state("binary_sensor.nina_batt_oke","on") %}
+          {% set discharging = is_state("binary_sensor.nina_batt_oke","on") %}
+          {% if charging %}
+            mdi:power-plug
+          {% else %}
+            mdi:power-plug-off
+          {% endif %}
+
+  - platform: template
+    sensors:
+      stigare_tlf_batt:
+        friendly_name: Batteri
+        unit_of_measurement: '%'
+        value_template: '{{ state_attr("device_tracker.life360_stig_are","battery") }}'
+        icon_template: >-
+          {% set battery_level = state_attr("device_tracker.life360_stig_are","battery")|int('unknown') %}
+          {% set battery_round = (battery_level|int / 10)|int * 10 %}
+          {% if battery_level == 'unknown' %}
+            mdi:battery-unknown
+          {% else %}
+            {% if battery_round >= 100 %}
+              mdi:battery
+            {% elif battery_round > 0 %}
+              mdi:battery-{{ battery_round }}
+            {% else %}
+              mdi:battery-alert
+            {% endif %}
+          {% endif %}
+      stigare_tlf_status:
+        friendly_name: Status
+        value_template: >-
+          {% set battery_level = state_attr("device_tracker.life360_stig_are","battery")|int('unknown') %}
+          {% set battery_round = (battery_level|int / 10)|int * 10 %}
+          {% set charging = is_state("binary_sensor.stigare_batt_oke","on") %}
+          {% set discharging = is_state("binary_sensor.stigare_batt_oke","on") %}
+          {% if charging %}
+            Lader
+          {% else %}
+            {% if battery_round >= 100 %}
+              Fullt
+            {% elif battery_round > 0 %}
+              Frakoblet
+            {% else %}
+              Lavt
+            {% endif %}
+          {% endif %}
+        icon_template: >-
+          {% set battery_level = state_attr("device_tracker.life360_stig_are","battery")|int('unknown') %}
+          {% set battery_round = (battery_level|int / 10)|int * 10 %}
+          {% set charging = is_state("binary_sensor.stigare_batt_oke","on") %}
+          {% set discharging = is_state("binary_sensor.stigare_batt_oke","on") %}
+          {% if charging %}
+            mdi:power-plug
+          {% else %}
+            mdi:power-plug-off
+          {% endif %}
+
+binary_sensor:
+  - platform: trend
+    sensors:
+      nina_batt_oke:
+        entity_id: sensor.nina_tlf_batt
+      nina_batt_red:
+        entity_id: sensor.nina_tlf_batt
+        invert: true
+      stigare_batt_oke:
+        entity_id: sensor.stigare_tlf_batt
+      stigare_batt_red:
+        entity_id: sensor.stigare_tlf_batt
+        invert: true
