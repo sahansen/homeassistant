@@ -1,0 +1,67 @@
+automation:
+- id: velkomst tidstaker start
+  alias: 'velkomst tidstaker start'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.noen_hjemme
+      from: 'off'
+      to: 'on'
+  condition:
+    condition: state
+    entity_id: binary_sensor.noen_hjemme
+    state: 'on'
+  action:
+  - service: timer.start
+    data:
+      entity_id: timer.inngangsdor
+  - service: input_boolean.turn_on
+    entity_id: input_boolean.inngangsdor_tid
+
+- id: velkomst tidstaker ferdig
+  alias: 'velkomst tidstaker ferdig'
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.inngangsdor
+  action:
+    - service: timer.cancel
+      data:
+        entity_id:  timer.inngangsdor
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.inngangsdor_tid
+
+- alias: Velkomst
+  trigger:
+  - from: 'off'
+    to: 'on'
+    entity_id: binary_sensor.inngangsdor
+    platform: state
+  condition:
+  - condition: state
+    entity_id: input_boolean.inngangsdor_tid
+    state: 'on'
+  action:
+  - data:
+      entity_id: light.innendors
+    service: light.turn_on
+  - service: tts.google_say
+    entity_id: media_player.home_kjellerstue
+    data_template:
+      message: Velkommen hjem
+      cache: false
+      language: 'no'
+  - service: timer.cancel
+    data:
+      entity_id:  timer.inngangsdor
+  - service: input_boolean.turn_off
+    entity_id: input_boolean.inngangsdor_tid
+
+input_boolean:
+  inngangsdor_tid:
+    name: Velkomst tid
+    initial: off
+
+timer:
+  inngangsdor:
+    duration: '00:10:00'
