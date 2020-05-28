@@ -1,0 +1,105 @@
+automation:
+  - alias: "vekkerklokke"
+    trigger:
+      - platform: time_pattern
+        minutes: '/5'
+        seconds: 2
+    condition:
+      condition: or
+      conditions:
+        - condition: and
+          conditions:
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 300) | timestamp_custom("%H:%M")) == states.sensor.vekkertid.state  }}'
+            - condition: state
+              entity_id: input_boolean.vekkerklokke
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.vekkerklokke_ukedag
+              state: 'on'
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+        - condition: and
+          conditions:
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 300) | timestamp_custom("%H:%M")) == states.sensor.vekkertid.state  }}'
+            - condition: state
+              entity_id: input_boolean.vekkerklokke
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.vekkerklokke_ukedag
+              state: 'off'
+    action:
+    - service: light.turn_on
+      data:
+        entity_id: light.soverom
+        brightness_pct: 5
+        transition: 1
+    - delay: 00:05:00
+    - service: light.turn_on
+      data:
+        entity_id: light.soverom
+        brightness_pct: 10
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.home_spisestue
+        volume_level: '0.8'
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue
+      data_template:
+        message: God morgen, stå opp
+        cache: false
+        language: 'no'
+    - service: homeassistant.turn_off
+      entity_id: automation.vekkerklokke
+
+  - alias: "vekkerklokke aktivert"
+    initial_state: true
+    trigger:
+    - platform: time_pattern
+      minutes: '/5'
+      seconds: 0
+    condition:
+    - condition: state
+      entity_id: input_boolean.vekkerklokke
+      state: 'on'
+    action:
+    - service: homeassistant.turn_on
+      entity_id: automation.vekkerklokke
+
+input_number:
+  vekkerklokke_timer:
+    name: Timer
+    icon: mdi:timer
+    min: 0
+    max: 23
+    step: 1
+
+  vekkerklokke_minutt:
+    name: Minutter
+    icon: mdi:timer
+    min: 0
+    max: 55
+    step: 5
+
+input_boolean:
+  vekkerklokke:
+    name: Vekking
+    initial: off
+    icon: mdi:check-outline
+  vekkerklokke_ukedag:
+    name: Kun hverdager
+    initial: on
+    icon: mdi:calendar
+
+sensor:
+  - platform: template
+    sensors:
+      vekkertid:
+        friendly_name: 'Når'
+        value_template: '{% if states.input_number.vekkerklokke_timer.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.vekkerklokke_timer.state|round(0)|string }}:{% if states.input_number.vekkerklokke_minutt.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.vekkerklokke_minutt.state|round(0)|string }}'
