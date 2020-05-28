@@ -1,0 +1,353 @@
+automation:
+  - alias: "heater minus 20"
+    initial_state: false
+    trigger:
+      - platform: time_pattern
+        minutes: '/5'
+        seconds: 2
+    condition:
+      condition: or
+      conditions:
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '-20'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 7200 ) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'on'
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '-20'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 7200 ) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'off'
+    action:
+      - service: script.turn_on
+        entity_id: script.heater_on
+      - service: homeassistant.turn_off
+        entity_id: automation.heater_minus_20, automation.heater_minus_10, automation.heater_plus_1, automation.heater_plus_5, automation.heater_minus_5
+
+  - alias: "heater minus 10"
+    initial_state: false
+    trigger:
+      - platform: time_pattern
+        minutes: '/5'
+        seconds: 2
+    condition:
+      condition: or
+      conditions:
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '-10'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 4500 ) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'on'
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '-10'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 4500 ) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'off'
+    action:
+      - service: script.turn_on
+        entity_id: script.heater_on
+      - service: homeassistant.turn_off
+        entity_id: automation.heater_minus_20, automation.heater_minus_10, automation.heater_plus_1, automation.heater_plus_5, automation.heater_minus_5
+
+  - alias: "heater minus 5"
+    initial_state: false
+    trigger:
+      - platform: time_pattern
+        minutes: '/5'
+        seconds: 2
+    condition:
+      condition: or
+      conditions:
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '-5'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 3600 ) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'on'
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '-5'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 3600 ) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'off'
+    action:
+      - service: script.turn_on
+        entity_id: script.heater_on
+      - service: homeassistant.turn_off
+        entity_id: automation.heater_minus_20, automation.heater_minus_10, automation.heater_plus_1, automation.heater_plus_5, automation.heater_minus_5
+    
+  - alias: "heater plus 1"
+    initial_state: false
+    trigger:
+      - platform: time_pattern
+        minutes: '/5'
+        seconds: 2
+    condition:
+      condition: or
+      conditions:
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '1'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 2700 ) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'on'
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '1'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 2700 ) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'off'
+    action:
+      - service: script.turn_on
+        entity_id: script.heater_on
+      - service: homeassistant.turn_off
+        entity_id: automation.heater_minus_20, automation.heater_plus_1, automation.heater_plus_5, automation.heater_minus_10, automation.heater_minus_5
+
+  - alias: "heater plus 5"
+    initial_state: false
+    trigger:
+      - platform: time_pattern
+        minutes: '/5'
+        seconds: 2
+    condition:
+      condition: or
+      conditions:
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '5'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 1800) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'on'
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+        - condition: and
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.huset_temperatur_ute_103
+              below: '5'
+            - condition: template
+              value_template: '{{ ((utcnow().strftime("%s") | int + 1800) | timestamp_custom("%H:%M")) == states.sensor.departuretime.state  }}'
+            - condition: state
+              entity_id: input_boolean.heaterstatus
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.heaterweekday
+              state: 'off'
+    action:
+      - service: script.turn_on
+        entity_id: script.heater_on
+      - service: homeassistant.turn_off
+        entity_id: automation.heater_minus_20, automation.heater_plus_1, automation.heater_plus_5, automation.heater_minus_10, automation.heater_minus_5
+
+  - alias: "heater enabled"
+    initial_state: true
+    trigger:
+    - platform: time_pattern
+      minutes: '/5'
+      seconds: 0
+    condition:
+    - condition: state
+      entity_id: input_boolean.heaterstatus
+      state: 'on'
+    action:
+    - service: homeassistant.turn_on
+      entity_id: automation.heater_minus_20, automation.heater_plus_5, automation.heater_plus_1, automation.heater_minus_10, automation.heater_minus_5
+
+  - alias: "heater off"
+    initial_state: false
+    trigger:
+      - platform: time_pattern
+        minutes: '/5'
+        seconds: 2
+    condition:
+      - condition: template
+        value_template: '{{utcnow().hour == (states.input_number.heater_hour.state  | round(0))  and  utcnow().minute == (states.input_number.heater_minutes.state | int | round(0))  }}'
+    action:
+      - service: homeassistant.turn_off
+        entity_id: automation.heater_off
+      - service: notify.mobile_app_sm_g988b
+        data_template:
+          message: "Motorvarmer slås av nå."
+      - service: switch.turn_off
+        entity_id: switch.garasje_motorvarmer_177
+
+  - id: motorvarmer_varsel
+    alias: 'Motorvarmer varsel'
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.noen_hjemme
+        to: 'off'
+        for: 00:10:00
+    condition:
+      condition: state
+      entity_id: switch.garasje_motorvarmer_177
+      state: 'on'
+    action:
+      - service: notify.mobile_app_nina_tlf
+        data:
+          message: "Motorvarmer er på selvom ingen er hjemme!"
+          data:
+            actions:
+              - action: "motorvarmerav"
+                title: "Slå av"
+      - service: notify.mobile_app_sm_g988b
+        data:
+          message: "Motorvarmer er på selvom ingen er hjemme!"
+          data:
+            actions:
+              - action: "motorvarmerav"
+                title: "Slå av"
+
+  - alias: Slå av motorvarmer
+    trigger:
+      platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: motorvarmerav
+    action:
+      - service: switch.turn_off
+        entity_id: switch.garasje_motorvarmer_177
+
+input_number:
+  heater_hour:
+    name: Timer
+    icon: mdi:timer
+    min: 0
+    max: 23
+    step: 1
+
+  heater_minutes:
+    name: Minutter
+    icon: mdi:timer
+    min: 0
+    max: 55
+    step: 5
+
+input_boolean:
+  heaterstatus:
+    name: Tidsinnstilling
+    initial: off
+    icon: mdi:check-outline
+  heaterweekday:
+    name: Kun hverdager
+    initial: on
+    icon: mdi:calendar
+
+sensor:
+  - platform: template
+    sensors:
+      departuretime:
+        friendly_name: 'Avreisetid'
+        value_template: '{% if states.input_number.heater_hour.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_hour.state|round(0)|string }}:{% if states.input_number.heater_minutes.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_minutes.state|round(0)|string }}'
+
+
+script:
+  heater_on:
+    sequence:
+    - service: switch.turn_on
+      entity_id: switch.garasje_motorvarmer_177
+    - service: notify.mobile_app_sm_g988b
+      data_template:
+        message: "Motorvarmer slått på."
+    - service: automation.turn_on
+      entity_id: automation.heater_off
