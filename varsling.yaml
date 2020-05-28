@@ -1,0 +1,184 @@
+automation:
+  - alias: brannalarm
+    trigger:
+    - entity_id: binary_sensor.kjellerstue_roykvarsler_41
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.kjokken_roykvarsler_45
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.roykvarsler_bad
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.soverom_roykvarsler_125
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.spisestue_roykvarsler_49
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.stue_roykvarsler_149
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.trimrom_roykvarsler_69
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.vaskerom_roykvasler_36
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.bod_roykvarsler_61
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.gjesterom_roykvarsler_57
+      platform: state
+      from: 'off'
+      to: 'on'
+    - entity_id: binary_sensor.gjesterom_roykvarsler_65
+      platform: state
+      from: 'off'
+      to: 'on'
+    condition: []
+    action:
+    - service: light.turn_on
+      data:
+        entity_id: light.soverom
+        brightness_pct: 100
+    - service: light.turn_on
+      data:
+        entity_id: light.spisestue
+        brightness_pct: 100
+    - service: light.turn_on
+      data:
+        entity_id: light.kjellerstue
+        brightness_pct: 100
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+        volume_level: '1'
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+      data_template:
+        message: Brannalarm
+        cache: false
+        language: 'no'
+    - delay: 00:00:10
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+      data_template:
+        message: Brannalarm
+        cache: false
+        language: 'no'
+    - delay: 00:00:10
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+      data_template:
+        message: Brannalarm
+        cache: false
+        language: 'no'
+    - delay: 00:00:10
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+      data_template:
+        message: Brannalarm
+        cache: false
+        language: 'no'
+
+  - alias: lekkasjealarm - vaskerom
+    trigger:
+    - entity_id: binary_sensor.vaskerom_lekkasje_33
+      platform: state
+      from: 'off'
+      to: 'on'
+    condition: []
+    action:
+    - service: light.turn_on
+      data:
+        entity_id: light.soverom
+        brightness_pct: 100
+    - service: light.turn_on
+      data:
+        entity_id: light.spisestue
+        brightness_pct: 100
+    - service: light.turn_on
+      data:
+        entity_id: light.kjellerstue
+        brightness_pct: 100
+    - data:
+        message: Vannlekkasje i vaskerommet!
+        title: VIKTIG!
+      service: notify.mobile_app_nina_tlf
+    - data:
+        message: Vannlekkasje i vaskerommet!
+        title: VIKTIG!
+      service: notify.mobile_app_sm_g988b
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+        volume_level: '1'
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+      data_template:
+        message: Vannlekkasje i vaskerommet
+        cache: false
+        language: 'no'
+    - delay: 00:00:10
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+      data_template:
+        message: Vannlekkasje i vaskerommet
+        cache: false
+        language: 'no'
+
+  - alias: lekkasjealarm - kjøkken
+    trigger:
+    - entity_id: binary_sensor.kjokken_lekkasje_16
+      platform: state
+      from: 'off'
+      to: 'on'
+    condition: []
+    action:
+    - service: light.turn_on
+      data:
+        entity_id: light.soverom
+        brightness_pct: 100
+    - service: light.turn_on
+      data:
+        entity_id: light.spisestue
+        brightness_pct: 100
+    - service: light.turn_on
+      data:
+        entity_id: light.kjellerstue
+        brightness_pct: 100
+    - data:
+        message: Vannlekkasje på kjøkkenet!
+        title: VIKTIG!
+      service: notify.mobile_app_nina_tlf
+    - data:
+        message: Vannlekkasje på kjøkkenet!
+        title: VIKTIG!
+      service: notify.mobile_app_sm_g988b
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+        volume_level: '1'
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+      data_template:
+        message: Vannlekkasje på kjøkkenet
+        cache: false
+        language: 'no'
+    - delay: 00:00:10
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue, media_player.home_kjellerstue
+      data_template:
+        message: Vannlekkasje på kjøkkenet
+        cache: false
+        language: 'no'
