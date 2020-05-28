@@ -1,0 +1,288 @@
+automation:
+- alias: Oppvaskmaskin - Endre status til vasker ved høyt strømtrekk
+  initial_state: 'on'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.forbruk_oppvaskmaskin
+    above: 10
+  condition:
+  - condition: state
+    entity_id: input_select.dishwasher_status
+    state: Standby
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.dishwasher_status
+      option: Vasker
+  - service: input_datetime.set_datetime
+    entity_id: input_datetime.oppvaskmaskin_start
+    data_template:
+      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+  id: 6a053698203a40398d6fa2f02e9586ce
+- alias: Oppvaskmaskin - Endre status til tørker ved redusert strømforbruk
+  initial_state: 'on'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.forbruk_oppvaskmaskin
+    below: 50
+    for:
+      seconds: 30
+  condition:
+  - condition: state
+    entity_id: input_select.dishwasher_status
+    state: Vasker
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.dishwasher_status
+      option: Tørker
+  id: 8016841cd0454853b652b40b7175e667
+- id: 91deb271c74949369e93660664db7607
+  alias: Oppvaskmaskin - Endre status til standby ved redusert strømforbruk
+  initial_state: 'on'
+  trigger:
+  - below: '2'
+    entity_id: sensor.forbruk_oppvaskmaskin
+    platform: numeric_state
+    for:
+      seconds: 10
+  condition:
+  - condition: state
+    entity_id: input_select.dishwasher_status
+    state: Tørker
+  action:
+  - service: tts.google_say
+    entity_id: media_player.home_spisestue
+    data_template:
+      message: Oppvaskmaskinen er ferdig!
+      cache: false
+      language: 'no'
+  - data:
+      entity_id: input_select.dishwasher_status
+      option: Standby
+    service: input_select.select_option
+  - data:
+      message: Oppvaskmaskin e ferdig!
+      title: Kjøkkenet
+    service: notify.mobile_app_nina_tlf
+  - data:
+      message: Oppvaskmaskinen e ferdig!
+      title: Kjøkkenet
+    service: notify.mobile_app_sm_g988b
+
+- id: 9232811b0c6f48d298467efae53ffb0f
+  alias: Kaffetrakter - Borte varsel
+  trigger:
+  - entity_id: binary_sensor.noen_hjemme
+    from: 'on'
+    platform: state
+    to: 'off'
+  condition:
+  - above: '2'
+    condition: numeric_state
+    entity_id: sensor.forbruk_kaffetrakter
+  action:
+  - service: notify.mobile_app_sm_g988b
+    data:
+      message: "Kaffetrakter er på!"
+      data:
+        actions:
+          - action: "kaffetrakterav"
+            title: "Slå av"
+  - service: notify.mobile_app_nina_tlf
+    data:
+      message: "Kaffetrakter er på!"
+      data:
+        actions:
+          - action: "kaffetrakterav"
+            title: "Slå av"
+
+- alias: Slå av kaffetrakter
+  trigger:
+    platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: kaffetrakterav
+  action:
+    - service: switch.turn_off
+      entity_id: switch.kjokken_kaffetrakter_88
+
+- id: '1553589973039'
+  alias: Kaffetrakter - Natt varsel
+  trigger:
+  - above: '2'
+    entity_id: sensor.forbruk_kaffetrakter
+    platform: numeric_state
+  condition: []
+  action:
+  - after: '22:00'
+    before: 05:30
+    condition: time
+  - service: notify.mobile_app_nina_tlf
+    data:
+      message: "Kaffetrakter er på!"
+      data:
+        actions:
+          - action: "kaffetrakterav"
+            title: "Slå av"
+  - service: notify.mobile_app_sm_g988b
+    data:
+      message: "Kaffetrakter er på!"
+      data:
+        actions:
+          - action: "kaffetrakterav"
+            title: "Slå av"
+  - service: tts.google_say
+    entity_id: media_player.chromecast_soverom
+    data_template:
+      message: Kaffetrakter er enda på
+      cache: false
+      language: 'no'
+  - service: tts.google_say
+    entity_id: media_player.home_spisestue
+    data_template:
+      message: Kaffetrakter er enda på
+      cache: false
+      language: 'no'
+- alias: Kaffetrakter - Endre til avslått
+  initial_state: 'on'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.forbruk_kaffetrakter
+    below: 1
+  condition:
+    condition: or
+    conditions:
+    - condition: state
+      entity_id: input_select.kaffetrakter_status
+      state: Varmer
+    - condition: state
+      entity_id: input_select.kaffetrakter_status
+      state: Trakter
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.kaffetrakter_status
+      option: Avslått
+- alias: Kaffetrakter - Endre til trakter
+  initial_state: 'on'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.forbruk_kaffetrakter
+    above: 100
+    for:
+      seconds: 10
+  condition:
+    condition: or
+    conditions:
+    - condition: state
+      entity_id: input_select.kaffetrakter_status
+      state: Varmer
+    - condition: state
+      entity_id: input_select.kaffetrakter_status
+      state: Avslått
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.kaffetrakter_status
+      option: Trakter
+
+- alias: Kaffetrakter - Endre til varmer
+  initial_state: 'on'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.forbruk_kaffetrakter
+    below: 80
+    for:
+      seconds: 5
+  condition:
+  - condition: state
+    entity_id: input_select.kaffetrakter_status
+    state: Trakter
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.kaffetrakter_status
+      option: Varmer 
+  - service: tts.google_say
+    entity_id: media_player.home_spisestue
+    data_template:
+      message: Kaffen er ferdig!
+      cache: false
+      language: 'no'
+
+- alias: Kaffetrakter - Endre til varmer fra avslått
+  initial_state: 'on'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.forbruk_kaffetrakter
+    below: 80
+    above: 2
+    for:
+      seconds: 5
+  condition:
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.kaffetrakter_status
+      option: Varmer
+
+input_select:
+  dishwasher_status:
+    name: Oppvaskmaskin status
+    options:
+      - Vasker
+      - Tørker
+      - Standby
+    initial: Standby
+  kaffetrakter_status:
+    name: Kaffetrakter status
+    options:
+      - Trakter
+      - Varmer
+      - Avslått
+    initial: Avslått
+
+
+
+script:
+  stovsug_kjokken:
+    alias: Støvsug kjøkken
+    sequence:
+    - service: vacuum.send_command
+      data:
+        entity_id: vacuum.xiaomi_vacuum_cleaner
+        command: app_segment_clean
+        params: [1]
+    - service: tts.google_say
+      entity_id: media_player.home_spisestue
+      data_template:
+        message: Den er grei, støvsuger kjøkkenet nå.
+        cache: false
+        language: 'no'
+
+sensor:
+- platform: template
+  sensors:
+    forbruk_kaffetrakter:
+      friendly_name: "Forbruk nå"
+      unit_of_measurement: 'W'
+      value_template: "{{ state_attr('switch.kjokken_kaffetrakter_88', 'current_power_w') }}"
+
+    forbruk_oppvaskmaskin:
+      friendly_name: "Oppvaskmaskin"
+      unit_of_measurement: 'W'
+      value_template: "{{ state_attr('switch.kjokken_oppvaskmaskin_25', 'current_power_w') }}"
+
+    batteri_kjokkenlekk:
+      friendly_name: "Kjøkken"
+      unit_of_measurement: '%'
+      value_template: "{{ state_attr('binary_sensor.kjokken_lekkasje_16', 'battery_level') }}"
+
+    oppvaskmaskin_tid:
+      value_template: "{{ (as_timestamp(now()) - state_attr('input_datetime.oppvaskmaskin_start', 'timestamp')) |timestamp_custom('%H:%M:%S', false) }}"
+
+input_datetime:
+  oppvaskmaskin_start:
+    has_date: true
+    has_time: true
