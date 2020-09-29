@@ -1,0 +1,106 @@
+          - animation:
+              state: 'on'
+            direction: right
+            entities:
+              - color: dimgrey
+                entity: sensor.real_time_consumption_innlandsvegen_48
+                max: 12000
+                min: 0
+                name: Aktiv effekt
+              - color: dimgrey
+                entity: sensor.ams_strom
+                max: 30
+                min: 0
+              - color: dimgrey
+                entity: sensor.ams_spenning
+                max: 250
+                min: 230
+            height: 40px
+            padding: 2px
+            positions:
+              icon: 'off'
+              indicator: inside
+              title: inside
+              value: outside
+            stack: vertical
+            type: 'custom:bar-card'
+        type: 'custom:vertical-stack-in-card'
+        
+        
+      - aggregate_func: max
+        entities:
+          - entity: sensor.consumption_lasthour
+            index: 0
+            name: Forbruk
+        group_by: hour
+        hour24: true
+        hours_to_show: 22
+        line_color: grey
+        name: Forbruk pr. time
+        points_per_hour: 1
+        show:
+          graph: bar
+        type: 'custom:mini-graph-card'
+      - aggregate_func: avg
+        entities:
+          - entity: sensor.consumption_lastday
+            index: 0
+            name: Forbruk
+        group_by: date
+        hour24: true
+        hours_to_show: 236
+        line_color: grey
+        name: Forbruk pr dag
+        show:
+          graph: bar
+        type: 'custom:mini-graph-card'
+        
+        
+      - cards:
+          - entities: []
+            show_header_toggle: false
+            title: Forbruk
+            type: entities
+          - cards:
+              - entity: sensor.ams_akk_forbruk
+                icon: 'mdi:flash'
+                type: entity
+              - entity: sensor.consumption_lastday
+                icon: 'mdi:flash'
+                type: entity
+            type: horizontal-stack
+          - cards:
+              - entity: sensor.consumption_thisweek
+                icon: 'mdi:flash'
+                type: entity
+              - entity: sensor.consumption_lastweek
+                icon: 'mdi:flash'
+                type: entity
+            type: horizontal-stack
+          - cards:
+              - entity: sensor.consumption_thismonth
+                icon: 'mdi:flash'
+                type: entity
+              - entity: sensor.consumption_lastmonth
+                icon: 'mdi:flash'
+                name: Forbruk forrige måned
+                type: entity
+            type: horizontal-stack
+          - entity: input_number.nettleie
+            type: entity
+        type: 'custom:vertical-stack-in-card'
+        
+        
+      - entities:
+          - entity: sensor.ams_min_trekk
+            icon: 'mdi:current-ac'
+          - entity: sensor.ams_gj_trekk
+            icon: 'mdi:current-ac'
+          - entity: sensor.ams_hoy_trekk
+            icon: 'mdi:current-ac'
+          - entity: sensor.ams_malerstand
+            icon: 'mdi:chart-line'
+          - entity: sensor.ams_signal
+            icon: 'mdi:wifi'
+        show_header_toggle: false
+        type: entities
