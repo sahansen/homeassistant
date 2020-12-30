@@ -1,3 +1,6 @@
+  - badges: []
+    cards:
+      - cards:
           - animation:
               state: 'on'
             direction: right
@@ -25,23 +28,24 @@
             stack: vertical
             type: 'custom:bar-card'
         type: 'custom:vertical-stack-in-card'
-        
-        
-      - aggregate_func: max
+      - aggregate_func: avg
         entities:
-          - entity: sensor.consumption_lasthour
+          - entity: sensor.real_time_consumption_innlandsvegen_48
             index: 0
-            name: Forbruk
+            name: Forbruk pr. time
         group_by: hour
         hour24: true
-        hours_to_show: 22
+        hours_to_show: 24
         line_color: grey
-        name: Forbruk pr. time
+        value_factor: -3
+        unit: kW
+        name: Forbruk
         points_per_hour: 1
+        icon: 'mdi:flash'
         show:
           graph: bar
         type: 'custom:mini-graph-card'
-      - aggregate_func: avg
+      - aggregate_func: last
         entities:
           - entity: sensor.consumption_lastday
             index: 0
@@ -51,11 +55,10 @@
         hours_to_show: 236
         line_color: grey
         name: Forbruk pr dag
+        icon: 'mdi:flash'
         show:
           graph: bar
         type: 'custom:mini-graph-card'
-        
-        
       - cards:
           - entities: []
             show_header_toggle: false
@@ -89,8 +92,6 @@
           - entity: input_number.nettleie
             type: entity
         type: 'custom:vertical-stack-in-card'
-        
-        
       - entities:
           - entity: sensor.ams_min_trekk
             icon: 'mdi:current-ac'
@@ -104,3 +105,6 @@
             icon: 'mdi:wifi'
         show_header_toggle: false
         type: entities
+    icon: 'mdi:flash'
+    path: strom
+    title: Strøm
