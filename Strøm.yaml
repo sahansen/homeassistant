@@ -1,77 +1,63 @@
 automation:
-  - id: timeskifte - reset
-    alias: Timessskifte - Reset
-    description: ''
-    trigger:
-      - platform: time
-        at: "00:00:00"
-    action:
-    - data_template:
-        value: '0'
-        entity_id: input_number.consumption_lasthour
-      service: input_number.set_value
-      
   - id: timeskifte
     alias: Timessskifte
     description: ''
     trigger:
       - platform: time
-        at: "00:00:00"
+        at: "00:59:00"
       - platform: time
-        at: "00:59:30"
+        at: "01:59:00"
       - platform: time
-        at: "01:59:30"
+        at: "02:59:00"
       - platform: time
-        at: "02:59:30"
+        at: "03:59:00"
       - platform: time
-        at: "03:59:30"
+        at: "04:59:00"
       - platform: time
-        at: "04:59:30"
+        at: "05:59:00"
       - platform: time
-        at: "05:59:30"
+        at: "06:59:00"
       - platform: time
-        at: "06:59:30"
+        at: "07:59:00"
       - platform: time
-        at: "07:59:30"
+        at: "08:59:00"
       - platform: time
-        at: "08:59:30"
+        at: "09:59:00"
       - platform: time
-        at: "09:59:30"
+        at: "10:59:00"
       - platform: time
-        at: "10:59:30"
+        at: "11:59:00"
       - platform: time
-        at: "11:59:30"
+        at: "12:59:00"
       - platform: time
-        at: "12:59:30"
+        at: "13:59:00"
       - platform: time
-        at: "13:59:30"
+        at: "14:59:00"
       - platform: time
-        at: "14:59:30"
+        at: "15:59:00"
       - platform: time
-        at: "15:59:30"
+        at: "16:59:00"
       - platform: time
-        at: "16:59:30"
+        at: "17:59:00"
       - platform: time
-        at: "17:59:30"
+        at: "18:59:00"
       - platform: time
-        at: "18:59:30"
+        at: "19:59:00"
       - platform: time
-        at: "19:59:30"
+        at: "20:59:00"
       - platform: time
-        at: "20:59:30"
+        at: "21:59:00"
       - platform: time
-        at: "21:59:30"
+        at: "22:59:00"
       - platform: time
-        at: "22:59:30"
-      - platform: time
-        at: "23:59:30"
+        at: "23:59:00"
     action:
-    - data_template:
-        value: '{{ state_attr(''sensor.real_time_consumption_innlandsvegen_48'', ''accumulatedConsumption'') }}'
+    - alias: ''
+      data_template:
+        value: '{{ state_attr(''sensor.strommaler'',
+          ''lastMeterConsumption'') }}'
         entity_id: input_number.consumption_lasthour
       service: input_number.set_value
-
-
 
   - id: manedsskifte
     alias: Månedsskifte
@@ -86,16 +72,17 @@ automation:
     - alias: ''
       data_template:
         entity_id: input_number.consumption_lastmonth
-        value: '{{ (state_attr(''sensor.real_time_consumption_innlandsvegen_48'',
+        value: '{{ (state_attr(''sensor.strommaler'',
           ''lastMeterConsumption'') - float(states(''input_number.consumption_startofmonth'')))
           | round(1) }}'
       service: input_number.set_value
     - alias: ''
       data_template:
-        value: '{{ state_attr(''sensor.real_time_consumption_innlandsvegen_48'',
+        value: '{{ state_attr(''sensor.strommaler'',
           ''lastMeterConsumption'') }}'
         entity_id: input_number.consumption_startofmonth
       service: input_number.set_value
+      
   - id: aarsskifte
     alias: Årsskifte
     description: ''
@@ -108,10 +95,11 @@ automation:
     action:
     - alias: ''
       data_template:
-        value: '{{ state_attr(''sensor.real_time_consumption_innlandsvegen_48'',
+        value: '{{ state_attr(''sensor.strommaler'',
           ''lastMeterConsumption'') }}'
         entity_id: input_number.consumption_startofyear
       service: input_number.set_value
+      
   - id: dagskifte
     alias: Dagskifte
     description: ''
@@ -122,17 +110,17 @@ automation:
     - alias: ''
       data_template:
         entity_id: input_number.consumption_lastday
-        value: '{{ (state_attr(''sensor.real_time_consumption_innlandsvegen_48'',
+        value: '{{ (state_attr(''sensor.strommaler'',
           ''lastMeterConsumption'') - float(states(''input_number.consumption_startofday'')))
           | round(1) }}'
       service: input_number.set_value
     - alias: ''
       data_template:
         entity_id: input_number.consumption_startofday
-        value: '{{ state_attr(''sensor.real_time_consumption_innlandsvegen_48'',
+        value: '{{ state_attr(''sensor.strommaler'',
           ''lastMeterConsumption'') }}'
       service: input_number.set_value
-
+      
   - id: ukeskifte
     alias: Ukeskifte
     description: ''
@@ -147,74 +135,88 @@ automation:
     - alias: ''
       data_template:
         entity_id: input_number.consumption_lastweek
-        value: '{{ (state_attr(''sensor.real_time_consumption_innlandsvegen_48'',
+        value: '{{ (state_attr(''sensor.strommaler'',
           ''lastMeterConsumption'') - float(states(''input_number.consumption_startofweek'')))
           | round(1) }}'
       service: input_number.set_value
     - alias: ''
       data_template:
         entity_id: input_number.consumption_startofweek
-        value: '{{ state_attr(''sensor.real_time_consumption_innlandsvegen_48'',
+        value: '{{ state_attr(''sensor.strommaler'',
           ''lastMeterConsumption'') }}'
       service: input_number.set_value
 
+
 sensor:
-  - platform: template
-    sensors:
-      strom_estimert:
-        friendly_name: "Estimert årlig forbruk"
-        unit_of_measurement: 'kWh'
-        value_template: "{{ state_attr('sensor.electricity_price_innlandsvegen_48', 'estimated_annual_consumption') }}"
-
-      ams_spenning:
-        friendly_name: "Spenning"
+      ams_spenning_l1:
+        friendly_name: "Spenning L1"
         unit_of_measurement: 'V'
-        value_template: "{{ state_attr('sensor.real_time_consumption_innlandsvegen_48', 'voltagePhase1') }}"
+        value_template: "{{ state_attr('sensor.strommaler', 'voltagePhase1') }}"
 
-      ams_strom:
-        friendly_name: "Strøm"
+      ams_spenning_l2:
+        friendly_name: "Spenning L2"
+        unit_of_measurement: 'V'
+        value_template: "{{ state_attr('sensor.strommaler', 'voltagePhase2') }}"
+
+      ams_spenning_l3:
+        friendly_name: "Spenning L3"
+        unit_of_measurement: 'V'
+        value_template: "{{ state_attr('sensor.strommaler', 'voltagePhase3') }}"
+
+      ams_strom_l1:
+        friendly_name: "Strøm L1"
         unit_of_measurement: 'A'
-        value_template: "{{ state_attr('sensor.real_time_consumption_innlandsvegen_48', 'currentL1') }}"
+        value_template: "{{ state_attr('sensor.strommaler', 'currentL1') }}"
+
+      ams_strom_l2:
+        friendly_name: "Strøm L2"
+        unit_of_measurement: 'A'
+        value_template: "{{ state_attr('sensor.strommaler', 'currentL2') }}"
+
+      ams_strom_l3:
+        friendly_name: "Strøm L3"
+        unit_of_measurement: 'A'
+        value_template: "{{ state_attr('sensor.strommaler', 'currentL3') }}"
 
       ams_min_trekk:
         friendly_name: "Laveste effektforbruk"
         unit_of_measurement: 'W'
-        value_template: "{{ state_attr('sensor.real_time_consumption_innlandsvegen_48', 'minPower') }}"
+        value_template: "{{ state_attr('sensor.strommaler', 'minPower') }}"
 
       ams_hoy_trekk:
         friendly_name: "Høyeste effektforbruk"
         unit_of_measurement: 'W'
-        value_template: "{{ state_attr('sensor.real_time_consumption_innlandsvegen_48', 'maxPower') }}"
+        value_template: "{{ state_attr('sensor.strommaler', 'maxPower') }}"
 
       ams_gj_trekk:
         friendly_name: "Gj.snitt effektforbruk"
         unit_of_measurement: 'W'
-        value_template: "{{ state_attr('sensor.real_time_consumption_innlandsvegen_48', 'averagePower') }}"
+        value_template: "{{ state_attr('sensor.strommaler', 'averagePower') }}"
 
       ams_akk_forbruk:
         friendly_name: "Dagens forbruk"
         unit_of_measurement: 'kWh'
-        value_template: "{{ state_attr('sensor.real_time_consumption_innlandsvegen_48', 'accumulatedConsumption') | round(2) }}"
+        value_template: "{{ state_attr('sensor.strommaler', 'accumulatedConsumption') | round(2) }}"
 
       ams_signal:
         friendly_name: "Signalstyrke"
         unit_of_measurement: 'dB'
-        value_template: "{{ state_attr('sensor.real_time_consumption_innlandsvegen_48', 'signalStrength') }}"
+        value_template: "{{ state_attr('sensor.strommaler', 'signalStrength') }}"
 
       ams_malerstand:
         friendly_name: "Målerstand"
         unit_of_measurement: 'kWh'
-        value_template: "{{ state_attr('sensor.real_time_consumption_innlandsvegen_48', 'lastMeterConsumption') | round(0) }}"
+        value_template: "{{ state_attr('sensor.strommaler', 'lastMeterConsumption') | round(0) }}"
 
       consumption_thisyear:
         friendly_name: "Forbruk dette år"
         unit_of_measurement: 'kWh'
-        value_template: "{{ (state_attr('sensor.real_time_consumption_innlandsvegen_48', 'lastMeterConsumption') - float(states('input_number.consumption_startofyear'))) | round(1) }}"
+        value_template: "{{ (state_attr('sensor.strommaler', 'lastMeterConsumption') - float(states('input_number.consumption_startofyear'))) | round(1) }}"
 
       consumption_thismonth:
         friendly_name: "Forbruk denne måned"
         unit_of_measurement: 'kWh'
-        value_template: "{{ (state_attr('sensor.real_time_consumption_innlandsvegen_48', 'lastMeterConsumption') - float(states('input_number.consumption_startofmonth'))) | round(1) }}"
+        value_template: "{{ (state_attr('sensor.strommaler', 'lastMeterConsumption') - float(states('input_number.consumption_startofmonth'))) | round(1) }}"
 
       consumption_lastmonth:
         friendly_name: "Forbruk forrige uke"
@@ -224,7 +226,7 @@ sensor:
       consumption_thisweek:
         friendly_name: "Forbruk denne uken"
         unit_of_measurement: 'kWh'
-        value_template: "{{ (state_attr('sensor.real_time_consumption_innlandsvegen_48', 'lastMeterConsumption') - float(states.input_number.consumption_startofweek.state) ) | round(1) }}"
+        value_template: "{{ (state_attr('sensor.strommaler', 'lastMeterConsumption') - float(states.input_number.consumption_startofweek.state) ) | round(1) }}"
 
       consumption_lastweek:
         friendly_name: "Forbruk forrige uke"
@@ -234,17 +236,17 @@ sensor:
       consumption_thisday:
         friendly_name: "Forbruk i dag"
         unit_of_measurement: 'kWh'
-        value_template: "{{ (state_attr('sensor.real_time_consumption_innlandsvegen_48', 'lastMeterConsumption') - float(states('input_number.consumption_startofday'))) | round(2) }}"
+        value_template: "{{ (state_attr('sensor.strommaler', 'lastMeterConsumption') - float(states('input_number.consumption_startofday'))) | round(2) }}"
 
       consumption_lastday:
         friendly_name: "Forbruk i går"
         unit_of_measurement: 'kWh'
         value_template: "{{ float(states('input_number.consumption_lastday')) }}"
-
+        
       consumption_lasthour:
         friendly_name: "Forbruk forrige time"
         unit_of_measurement: 'kWh'
-        value_template: "{{ ((state_attr('sensor.real_time_consumption_innlandsvegen_48', 'accumulatedConsumption')) - float(states('input_number.consumption_lasthour'))) | round(2) }}"
+        value_template: "{{ (state_attr('sensor.strommaler', 'lastMeterConsumption')) - float(states('input_number.consumption_lasthour')) | round(2) }}"
 
 input_number:
   consumption_startofyear:
@@ -255,6 +257,7 @@ input_number:
     mode: box
     unit_of_measurement: 'kWh'
     icon: mdi:counter
+    
   consumption_startofmonth:
     name: Målerstand start på måned
     max: 999999999
@@ -263,6 +266,7 @@ input_number:
     mode: box
     unit_of_measurement: 'kWh'
     icon: mdi:counter
+    
   consumption_lastmonth:
     name: Målerstand forrige måned
     max: 999999999
@@ -279,6 +283,7 @@ input_number:
     mode: box
     unit_of_measurement: 'kWh'
     icon: mdi:counter
+    
   consumption_lastweek:
     name: Forbruk forrige uke
     max: 999999999
@@ -287,6 +292,7 @@ input_number:
     mode: box
     unit_of_measurement: 'kWh'
     icon: mdi:counter
+    
   consumption_startofday:
     name: Målerstand start på dag
     max: 999999999
@@ -295,6 +301,7 @@ input_number:
     mode: box
     unit_of_measurement: 'kWh'
     icon: mdi:counter
+    
   consumption_lastday:
     name: Forbruk forrige dag
     max: 999999999
@@ -303,47 +310,7 @@ input_number:
     mode: box
     unit_of_measurement: 'kWh'
     icon: mdi:counter
-  cost_lastday:
-    name: Kostnad forrige dag
-    max: 999999999
-    min: 0
-    step: 0.1
-    mode: box
-    unit_of_measurement: 'kWh'
-    icon: mdi:counter
-  cost_lastweek:
-    name: Kostnad forrige uke
-    max: 999999999
-    min: 0
-    step: 0.1
-    mode: box
-    unit_of_measurement: 'kWh'
-    icon: mdi:counter
-  cost_lastmonth:
-    name: Kostnad forrige måned
-    max: 999999999
-    min: 0
-    step: 0.1
-    mode: box
-    unit_of_measurement: 'kWh'
-    icon: mdi:counter
-  cost_thismonth:
-    name: Kostnad denne måned
-    max: 999999999
-    min: 0
-    step: 0.1
-    mode: box
-    unit_of_measurement: 'kWh'
-    icon: mdi:counter
-  cost_thisweek:
-    name: Kostnad denne måned
-    max: 999999999
-    min: 0
-    step: 0.1
-    mode: box
-    unit_of_measurement: 'kWh'
-    icon: mdi:counter
-
+    
   consumption_lasthour:
     name: Forbruk forrige time
     max: 999999999
@@ -352,6 +319,7 @@ input_number:
     mode: box
     unit_of_measurement: 'kWh'
     icon: mdi:counter
+    
   nettleie:
     name: Nettleie
     min: 0
