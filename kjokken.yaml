@@ -1,9 +1,8 @@
 automation:
 - alias: Oppvaskmaskin - Endre status til vasker ved høyt strømtrekk
-  initial_state: 'on'
   trigger:
   - platform: numeric_state
-    entity_id: sensor.forbruk_oppvaskmaskin
+    entity_id: sensor.kjokken_oppvaskmaskin_forbruk
     above: 10
   condition:
   - condition: state
@@ -20,10 +19,9 @@ automation:
       datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
   id: 6a053698203a40398d6fa2f02e9586ce
 - alias: Oppvaskmaskin - Endre status til tørker ved redusert strømforbruk
-  initial_state: 'on'
   trigger:
   - platform: numeric_state
-    entity_id: sensor.forbruk_oppvaskmaskin
+    entity_id: sensor.kjokken_oppvaskmaskin_forbruk
     below: 50
     for:
       seconds: 30
@@ -39,10 +37,9 @@ automation:
   id: 8016841cd0454853b652b40b7175e667
 - id: 91deb271c74949369e93660664db7607
   alias: Oppvaskmaskin - Endre status til standby ved redusert strømforbruk
-  initial_state: 'on'
   trigger:
-  - below: '2'
-    entity_id: sensor.forbruk_oppvaskmaskin
+  - below: 2
+    entity_id: sensor.kjokken_oppvaskmaskin_forbruk
     platform: numeric_state
     for:
       seconds: 10
@@ -64,7 +61,7 @@ automation:
   - data:
       message: Oppvaskmaskin e ferdig!
       title: Kjøkkenet
-    service: notify.mobile_app_nina_tlf
+    service: notify.mobile_app_clt_l29
   - data:
       message: Oppvaskmaskinen e ferdig!
       title: Kjøkkenet
@@ -80,7 +77,7 @@ automation:
   condition:
   - above: '2'
     condition: numeric_state
-    entity_id: sensor.forbruk_kaffetrakter
+    entity_id: sensor.kjokken_stikk_venstre_forbruk
   action:
   - service: notify.mobile_app_sm_g988b
     data:
@@ -89,7 +86,7 @@ automation:
         actions:
           - action: "kaffetrakterav"
             title: "Slå av"
-  - service: notify.mobile_app_nina_tlf
+  - service: notify.mobile_app_clt_l29
     data:
       message: "Kaffetrakter er på!"
       data:
@@ -105,20 +102,20 @@ automation:
       action: kaffetrakterav
   action:
     - service: switch.turn_off
-      entity_id: switch.kjokken_kaffetrakter_88
+      entity_id: switch.kjokken_stikk_venstre
 
 - id: '1553589973039'
   alias: Kaffetrakter - Natt varsel
   trigger:
-  - above: '2'
-    entity_id: sensor.forbruk_kaffetrakter
+  - above: 2
+    entity_id: sensor.kjokken_stikk_venstre_forbruk
     platform: numeric_state
   condition: []
   action:
   - after: '22:00'
     before: 05:30
     condition: time
-  - service: notify.mobile_app_nina_tlf
+  - service: notify.mobile_app_clt_l29
     data:
       message: "Kaffetrakter er på!"
       data:
@@ -145,10 +142,9 @@ automation:
       cache: false
       language: 'no'
 - alias: Kaffetrakter - Endre til avslått
-  initial_state: 'on'
   trigger:
   - platform: numeric_state
-    entity_id: sensor.forbruk_kaffetrakter
+    entity_id: sensor.kjokken_stikk_venstre_forbruk
     below: 1
   condition:
     condition: or
@@ -165,10 +161,9 @@ automation:
       entity_id: input_select.kaffetrakter_status
       option: Avslått
 - alias: Kaffetrakter - Endre til trakter
-  initial_state: 'on'
   trigger:
   - platform: numeric_state
-    entity_id: sensor.forbruk_kaffetrakter
+    entity_id: sensor.kjokken_stikk_venstre_forbruk
     above: 100
     for:
       seconds: 10
@@ -188,10 +183,9 @@ automation:
       option: Trakter
 
 - alias: Kaffetrakter - Endre til varmer
-  initial_state: 'on'
   trigger:
   - platform: numeric_state
-    entity_id: sensor.forbruk_kaffetrakter
+    entity_id: sensor.kjokken_stikk_venstre_forbruk
     below: 80
     for:
       seconds: 5
@@ -212,15 +206,13 @@ automation:
       language: 'no'
 
 - alias: Kaffetrakter - Endre til varmer fra avslått
-  initial_state: 'on'
   trigger:
   - platform: numeric_state
-    entity_id: sensor.forbruk_kaffetrakter
+    entity_id: sensor.kjokken_stikk_venstre_forbruk
     below: 80
     above: 2
     for:
       seconds: 5
-  condition:
   action:
   - service: input_select.select_option
     data:
@@ -244,7 +236,6 @@ input_select:
     initial: Avslått
 
 
-
 script:
   stovsug_kjokken:
     alias: Støvsug kjøkken
@@ -264,21 +255,6 @@ script:
 sensor:
 - platform: template
   sensors:
-    forbruk_kaffetrakter:
-      friendly_name: "Forbruk nå"
-      unit_of_measurement: 'W'
-      value_template: "{{ state_attr('switch.kjokken_kaffetrakter_88', 'current_power_w') }}"
-
-    forbruk_oppvaskmaskin:
-      friendly_name: "Oppvaskmaskin"
-      unit_of_measurement: 'W'
-      value_template: "{{ state_attr('switch.kjokken_oppvaskmaskin_25', 'current_power_w') }}"
-
-    batteri_kjokkenlekk:
-      friendly_name: "Kjøkken"
-      unit_of_measurement: '%'
-      value_template: "{{ state_attr('binary_sensor.kjokken_lekkasje_16', 'battery_level') }}"
-
     oppvaskmaskin_tid:
       value_template: "{{ (as_timestamp(now()) - state_attr('input_datetime.oppvaskmaskin_start', 'timestamp')) |timestamp_custom('%H:%M:%S', false) }}"
 
