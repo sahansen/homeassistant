@@ -1,0 +1,177 @@
+automation:
+  - alias: 'Motorvarmer - Start'
+    trigger:
+      platform: time_pattern
+      minutes: "/1"
+      seconds: 00
+    condition:
+      condition: and
+      conditions:
+        - condition: template
+          value_template: '{{ now().time().strftime("%H:%M") == states.sensor.motorvarmer_start_tid.state }}'
+        - condition: template
+          value_template: '{{ states.sensor.motorvarmer_oppvarmingstid.state|float > 0 }}'
+        - condition: state
+          entity_id: input_boolean.motorvarmer_tidsinnstilling
+          state: 'on'
+        - condition: or
+          conditions:
+            - condition: state
+              entity_id: input_boolean.motorvarmer_ukedag
+              state: 'off'
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+    action:
+      - service: switch.turn_on
+        entity_id: switch.garasje_motorvarmer   # Endres
+
+
+  - alias: 'Motorvarmer - Stopp en time etter avreisetid'
+    trigger:
+      platform: time_pattern
+      minutes: "/1"
+      seconds: 00
+    condition:
+      condition: and
+      conditions:
+        - condition: template
+          value_template: '{{((utcnow().strftime("%s") | int - 3600 ) | timestamp_custom("%H:%M")) == states.sensor.motorvarmer_avreisetid.state }}'
+        - condition: template
+          value_template: '{{ states.sensor.motorvarmer_oppvarmingstid.state|float > 0 }}'
+        - condition: state
+          entity_id: input_boolean.motorvarmer_tidsinnstilling
+          state: 'on'
+        - condition: or
+          conditions:
+            - condition: state
+              entity_id: input_boolean.motorvarmer_ukedag
+              state: 'off'
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+    action:
+      - service: switch.turn_off
+        entity_id: switch.garasje_motorvarmer   # Endres
+
+  - alias: 'Motorvarmer - Temperatursjekk 3 timer før avreise'
+    trigger:
+      platform: time_pattern
+      minutes: "/1"
+      seconds: 00
+    condition:
+      condition: and
+      conditions:
+        - condition: template
+          value_template: '{{ now().time().strftime("%H:%M") == states.sensor.motorvarmer_utetemp_3t.state }}'
+        - condition: state
+          entity_id: input_boolean.motorvarmer_tidsinnstilling
+          state: 'on'
+        - condition: or
+          conditions:
+            - condition: state
+              entity_id: input_boolean.motorvarmer_ukedag
+              state: 'off'
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+    action:
+      service: input_number.set_value
+      data_template:
+        entity_id: input_number.motorvarmer_utetemp_3t_for
+        value: '{{ states.sensor.ute_sensor_temperatur.state }}'
+
+input_number:
+  motorvarmer_timer:
+    name: Timer
+    icon: mdi:timer
+    min: 0
+    max: 23
+    step: 1
+
+  motorvarmer_minutt:
+    name: Minutt
+    icon: mdi:timer
+    min: 0
+    max: 59
+    step: 1
+
+  motorvarmer_utetemp_3t_for:
+    name: Temp. 3 t. før
+    unit_of_measurement: °C
+    icon: mdi:thermometer
+    min: -30
+    max: 30
+    step: 0.1
+
+input_boolean:
+  motorvarmer_ukedag:
+    name: Kun ukedager
+    icon: mdi:calendar
+  motorvarmer_tidsinnstilling:
+    name: Tidsinnstilling
+    
+sensor:
+  - platform: template
+    sensors:
+      motorvarmer_avreisetid:
+        friendly_name: 'Avreisetid'
+        icon_template: mdi:clock
+        value_template: >-
+          {% if states('input_number.motorvarmer_timer')|int|string|length == 1 %}0{% endif -%}
+          {{- states('input_number.motorvarmer_timer')|int|string -}}:
+          {%- if states('input_number.motorvarmer_minutt')|int|string|length == 1 %}0{% endif -%}
+          {{- states('input_number.motorvarmer_minutt')|int|string -}}
+          
+  - platform: template
+    sensors:
+      motorvarmer_oppvarmingstid:
+        friendly_name: 'Beregnet oppvarmingstid'
+        unit_of_measurement: timer
+        value_template: >
+          {% if ((states('input_number.motorvarmer_utetemp_3t_for')|float) < 10) %}
+            {% if not states('input_number.motorvarmer_utetemp_3t_for') == 'unknown' %}
+              {{(states('input_number.motorvarmer_utetemp_3t_for')|float * (-0.1) + 1.5)|round(1)}}
+            {%endif%}
+          {%else%}
+            0
+          {%endif%}
+          
+  - platform: template
+    sensors:
+      motorvarmer_start_tid:
+        friendly_name: 'Beregnet starttid'
+        icon_template: mdi:clock
+        value_template: >
+          {% if states.sensor.motorvarmer_avreisetid.state is defined %}
+            {% if ((states('sensor.motorvarmer_oppvarmingstid')|float) > 0) %}
+              {{ strptime(((as_timestamp('1970-01-01 ' ~ states('sensor.motorvarmer_avreisetid')) - (states('sensor.motorvarmer_oppvarmingstid')|float *3600))|timestamp_local), '%Y-%m-%d %H:%M:%S').strftime("%H:%M") }}
+            {%else%}
+              Aldri
+            {%endif%}
+          {% else %}
+              Venter på sensorer
+          {% endif%}
+  - platform: template
+    sensors:
+      motorvarmer_utetemp_3t:
+        friendly_name: '3t før avreise'
+        icon_template: mdi:clock
+        value_template: >
+          {% if states.sensor.motorvarmer_avreisetid.state is defined %}
+              {{ strptime(((as_timestamp('1970-01-01 ' ~ states('sensor.motorvarmer_avreisetid')) - (10800))|timestamp_local), '%Y-%m-%d %H:%M:%S').strftime("%H:%M") }}
+          {% else %}
+              Venter på sensorer
+          {% endif%}
