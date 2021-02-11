@@ -1,15 +1,16 @@
 - id: '1557297178655'
   alias: Dagens oppdatering
   trigger:
-  - at: 09:00
+  - at: 09:00:00
     platform: time
   condition: []
   action:
   - data:
-      message: Det er {{states('sensor.netatmo_utfor_soverom_temperature')}} grader
+      message: Det er {{states('sensor.ute_sensor_temperatur')}} grader
         ute. Søppel hentes om {{states('sensor.kalender_soppel_igjen')}} dager.
       title: Dagens oppdatering
     service: notify.mobile_app_sm_g988b
+    
 - id: '1561241831216'
   alias: Soveromsvindu
   trigger:
@@ -19,12 +20,12 @@
     to: 'off'
   condition:
   - condition: state
-    entity_id: binary_sensor.soverom_vindu_170
+    entity_id: binary_sensor.soverom_vindu
     state: 'on'
   action:
   - data:
       message: Soveromsvinduet er åpent!
-    service: notify.mobile_app_nina_tlf
+    service: notify.mobile_app_clt_l29
   - data:
       message: Soveromsvinduet er åpent!
     service: notify.mobile_app_sm_g988b
@@ -44,7 +45,8 @@
   - data:
       message: Jeg kommer meg ikke videre, fint om du kan sjekke til meg når du kommer
         hjem. Hilsen, din støvsuger.
-    service: notify.mobile_app_nina_tlf
+    service: notify.mobile_app_clt_l29
+
 - id: ringeklokke
   alias: Ringeklokke varsel
   trigger:
@@ -65,9 +67,9 @@
     data:
       message: Det ringer på!
       data:
-        image: !secret inngang
-  - service: notify.mobile_app_nina_tlf
+        image: https://u7kv25oww0snuspceopf9kr1cjhwcvi8.ui.nabu.casa/local/doorbell.jpg
+  - service: notify.mobile_app_clt_l29
     data:
       message: Det ringer på!
       data:
-        image: !secret inngang
+        image: https://u7kv25oww0snuspceopf9kr1cjhwcvi8.ui.nabu.casa/local/doorbell.jpg
