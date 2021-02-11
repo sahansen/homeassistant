@@ -1,326 +1,196 @@
 automation:
-- alias: Vaskemaskin - Endre status til vasker ved høyt strømtrekk
-  initial_state: true
+- id: velkomst tidstaker start
+  alias: 'velkomst tidstaker start'
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.vaskerom_vaskemaskin_forbruk
-    above: 5
-    for:
-      seconds: 20
+    - platform: state
+      entity_id: binary_sensor.noen_hjemme
+      from: 'off'
+      to: 'on'
   condition:
-  - condition: state
-    entity_id: input_select.vaskemaskin_status
-    state: Standby
+    condition: state
+    entity_id: binary_sensor.noen_hjemme
+    state: 'on'
   action:
-  - service: input_select.select_option
+  - service: timer.start
     data:
-      entity_id: input_select.vaskemaskin_status
-      option: Vasker
-  - service: input_datetime.set_datetime
-    entity_id: input_datetime.vaskemaskin_start
-    data_template:
-      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+      entity_id: timer.inngangsdor
+  - service: input_boolean.turn_on
+    entity_id: input_boolean.inngangsdor_tid
 
-- alias: Vaskemaskin - Endre status til standby ved ingen strømtrekk
-  initial_state: true
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.vaskerom_vaskemaskin_forbruk
-    below: 1
-  condition:
-  - condition: state
-    entity_id: input_select.vaskemaskin_status
-    state: Ferdig
-  action:
-  - service: input_select.select_option
-    data:
-      entity_id: input_select.vaskemaskin_status
-      option: Standby
-- alias: Vaskemaskin - Endre status til ferdig ved redusert strømforbruk
-  initial_state: true
-  trigger:
-  - below: 4
-    above: 1
-    for:
-      seconds: 3
-    entity_id: sensor.vaskerom_vaskemaskin_forbruk
-    platform: numeric_state
-  condition:
-    condition: and
-    conditions:
-    - condition: time
-      after: '06:30:00'
-      before: '22:00:00'
-    - condition: state
-      entity_id: input_select.vaskemaskin_status
-      state: Vasker
-  action:
-  - service: tts.google_say
-    entity_id: media_player.home_spisestue
-    data_template:
-      message: Vaskemaskinen er ferdig!
-      cache: false
-      language: 'no'
-  - data:
-      entity_id: input_select.vaskemaskin_status
-      option: Ferdig
-    service: input_select.select_option
-  - data:
-      title: Vaskerom
-      message: Vaskemaskin e ferdig!
-      data:
-        actions:
-          - action: "paminnsenere_vask"
-            title: "Utsett 30 min."
-    service: notify.mobile_app_clt_l29
-  - data:
-      title: Vaskerom
-      message: Vaskemaskin e ferdig!
-      data:
-        actions:
-          - action: "paminnsenere_vask"
-            title: "Utsett 30 min."
-    service: notify.mobile_app_sm_g988b
-- alias: Vaskemaskin - Påminn senere
-  trigger:
-    platform: event
-    event_type: mobile_app_notification_action
-    event_data:
-      action: paminnsenere_vask
-  action:
-    - service: timer.start
-      entity_id: timer.paminnsenere_vask
-- id: Vaskemaskin - Påminnelse
-  alias: 'Påminn senere'
+- id: velkomst tidstaker ferdig
+  alias: 'velkomst tidstaker ferdig'
   trigger:
     - platform: event
       event_type: timer.finished
       event_data:
-        entity_id: timer.paminnsenere_vask
+        entity_id: timer.inngangsdor
   action:
-  - service: notify.mobile_app_clt_l29
-    data:
-      title: Vaskerom
-      message: "Tøm vaskemaskin"
+    - service: timer.cancel
       data:
-        actions:
-          - action: "paminnsenere_vask"
-            title: "Utsett 30 min"
-  - service: notify.mobile_app_sm_g988b
-    data:
-      title: Vaskerom
-      message: "Tøm vaskemaskin"
-      data:
-        actions:
-          - action: "paminnsenere_vask"
-            title: "Utsett 30 min"
-- alias: Vaskemaskin - Brukt tid
-  trigger:
-    platform: time_pattern
-    seconds: '*'
-  condition:
-    condition: state
-    entity_id: input_select.vaskemaskin_status
-    state: 'Vasker'
-  action:
-    service: homeassistant.update_entity
-    entity_id: sensor.vaskemaskin_tid
+        entity_id:  timer.inngangsdor
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.inngangsdor_tid
 
-- alias: Tørketrommel - Endre status til tørker ved høyt strømtrekk
-  initial_state: true
+- alias: Velkomst
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.vaskerom_torketrommel_forbruk
-    above: 500
-    for:
-      seconds: 10
-  condition:
-  - condition: state
-    entity_id: input_select.torketrommel_status
-    state: Standby
-  action:
-  - service: input_select.select_option
-    data:
-      entity_id: input_select.torketrommel_status
-      option: Tørker
-  - service: input_datetime.set_datetime
-    entity_id: input_datetime.torketrommel_start
-    data_template:
-      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
-
-- alias: Tørketrommel - Endre status til standby ved redusert strømforbruk
-  initial_state: true
-  trigger:
-  - below: 3
-    entity_id: sensor.vaskerom_torketrommel_forbruk
-    platform: numeric_state
-  condition:
-  - condition: state
-    entity_id: input_select.torketrommel_status
-    state: Tørker
-  action:
-  - service: tts.google_say
-    entity_id: media_player.home_spisestue
-    data_template:
-      message: Tørketrommelen er ferdig!
-      cache: false
-      language: 'no'
-  - data:
-      entity_id: input_select.torketrommel_status
-      option: Standby
-    service: input_select.select_option
-  - data:
-      message: Tørketrommeln e ferdig!
-      title: Vaskerom
-    service: notify.mobile_app_clt_l29
-  - data:
-      message: Tørketrommeln e ferdig!
-      title: Vaskerom
-    service: notify.mobile_app_sm_g988b
-
-- alias: Tørketrommel - Brukt tid
-  trigger:
-    platform: time_pattern
-    seconds: '*'
-  condition:
-    condition: state
-    entity_id: input_select.torketrommel_status
-    state: 'Tørker'
-  action:
-    service: homeassistant.update_entity
-    entity_id: sensor.torketrommel_tid
-
-- alias: Tørketrommel - Start vifte
-  trigger:
-  - entity_id: input_select.torketrommel_status
+  - from: 'off'
+    to: 'on'
+    entity_id: binary_sensor.gang_inngangsdor
     platform: state
-    from: 'Standby'
-    to: 'Tørker'
-  condition: []
-  action:
-  - service: switch.turn_on
-    data:
-      entity_id: switch.vaskerom_avtrekksvifte
-
-- alias: Tørketrommel - Stopp vifte
-  trigger:
-  - entity_id: input_select.torketrommel_status
-    platform: state
-    from: 'Tørker'
-    to: 'Standby'
-    for:
-      minutes: 20
-  condition: []
-  action:
-  - service: switch.turn_off
-    data:
-      entity_id: switch.vaskerom_avtrekksvifte
-
-- id: '1549675365377'
-  alias: Avtrekksvifte Auto På
-  trigger:
-  - above: 52
-    entity_id: sensor.vaskerom_multisensor_fuktighet
-    platform: numeric_state
-  condition: []
-  action:
-  - data:
-      entity_id: switch.vaskerom_avtrekksvifte
-    service: switch.turn_on
-  - entity_id: input_boolean.fan_triggered
-    service: input_boolean.turn_on
-
-- alias: Avtrekksvifte Auto Av
-  trigger:
-  - below: 48
-    entity_id: sensor.vaskerom_multisensor_fuktighet
-    platform: numeric_state
-    for:
-      minutes: 15
   condition:
   - condition: state
-    entity_id: input_boolean.fan_triggered
+    entity_id: input_boolean.inngangsdor_tid
     state: 'on'
   action:
   - data:
-      entity_id: switch.vaskerom_avtrekksvifte
-    service: switch.turn_off
-  - entity_id: input_boolean.fan_triggered
-    service: input_boolean.turn_off
+      entity_id: light.gang
+    service: light.turn_on
+  - data:
+      entity_id: light.spisestue
+    service: light.turn_on
+  - data:
+      entity_id: light.kjokken
+    service: light.turn_on
+  - service: switch.turn_on
+    data:
+      entity_id: switch.hovedkran
+  - service: tts.google_say
+    entity_id: media_player.home_kjellerstue
+    data_template:
+      message: Velkommen hjem
+      cache: false
+      language: 'no'
+  - service: timer.cancel
+    data:
+      entity_id:  timer.inngangsdor
+  - service: input_boolean.turn_off
+    entity_id: input_boolean.inngangsdor_tid
 
-- alias: Avtrekksvifte - Manuell på
+- alias: Yttergang - Bortemodus
   trigger:
   - event_data:
-      entity_id: zwave.toalett_vifte_knapp
-      scene_id: 1
+      entity_id: zwave.yttergang
+      scene_id: 4
+      scene_data: 2
+    event_type: zwave.scene_activated
+    platform: event
+  condition: []
+  action:
+    - service: light.turn_off
+      data:
+        entity_id: light.gang
+    - service: light.turn_off
+      data:
+        entity_id: light.spisestue
+    - service: light.turn_off
+      data:
+        entity_id: light.kjokken
+    - service: light.turn_off
+      data:
+        entity_id: light.kjellerstue
+    - service: switch.turn_off
+      data:
+        entity_id: switch.vaskerom_vaskemaskin
+    - service: switch.turn_off
+      data:
+        entity_id: switch.vaskerom_torketrommel
+    - service: switch.turn_off
+      data:
+        entity_id: switch.hovedkran
+    - service: switch.turn_off
+      data:
+        entity_id: switch.kjokken_stikk_venstre
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.home_kjellerstue
+        volume_level: '0.5'
+    - service: tts.google_say
+      entity_id: media_player.home_kjellerstue
+      data_template:
+        message: Slår alt av, god tur!
+        cache: false
+        language: 'no'
+
+- alias: Yttergang - Kort bortemodus
+  trigger:
+  - event_data:
+      entity_id: zwave.yttergang
+      scene_id: 4
       scene_data: 0
     event_type: zwave.scene_activated
     platform: event
   condition: []
   action:
+    - service: light.turn_off
+      data:
+        entity_id: light.gang
+    - service: light.turn_off
+      data:
+        entity_id: light.spisestue
+    - service: light.turn_off
+      data:
+        entity_id: light.kjokken
+    - service: light.turn_off
+      data:
+        entity_id: light.kjellerstue
+    - service: switch.turn_off
+      data:
+        entity_id: switch.hovedkran
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.home_kjellerstue
+        volume_level: '0.5'
+    - service: tts.google_say
+      entity_id: media_player.home_kjellerstue
+      data_template:
+        message: Hadet bra
+        cache: false
+        language: 'no'
+
+- alias: Yttergang - Normalmodus
+  trigger:
+  - event_data:
+      entity_id: zwave.yttergang
+      scene_id: 2
+      scene_data: 0
+    event_type: zwave.scene_activated
+    platform: event
+  condition: []
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: light.gang
+    - service: light.turn_on
+      data:
+        entity_id: light.kjokken
+    - service: light.turn_on
+      data:
+        entity_id: light.spisestue
     - service: switch.turn_on
       data:
-        entity_id: switch.vaskerom_avtrekksvifte
-
-- alias: Avtrekksvifte av - Manuell
-  trigger:
-  - entity_id: switch.vaskerom_avtrekksvifte
-    platform: state
-    from: 'off'
-    to: 'on'
-    for:
-      minutes: 30
-  condition:
-  - condition: state
-    entity_id: input_boolean.fan_triggered
-    state: 'off'
-  action:
-  - data:
-      entity_id: switch.vaskerom_avtrekksvifte
-    service: switch.turn_off
-
-input_select:
-  vaskemaskin_status:
-    name: Vaskemaskin status
-    options:
-      - Vasker
-      - Ferdig
-      - Standby
-    initial: Standby
-  torketrommel_status:
-    name: Tørketrommel status
-    options:
-      - Tørker
-      - Standby
-    initial: Standby
-
-sensor:
-- platform: template
-  sensors:
-    forbruk_vaskerom:
-      friendly_name: "Vaskerom"
-      unit_of_measurement: 'W'
-      value_template: "{{ (states.sensor.vaskerom_vaskemaskin_forbruk.state | float) + (states.sensor.vaskerom_torketrommel_forbruk.state | float) + (states.sensor.vaskerom_avtrekksvifte_forbruk.state | float) }}"
-
-    vaskemaskin_tid:
-      value_template: "{{ (as_timestamp(now()) - state_attr('input_datetime.vaskemaskin_start', 'timestamp')) |timestamp_custom('%H:%M:%S', false) }}"
-
-    torketrommel_tid:
-      value_template: "{{ (as_timestamp(now()) - state_attr('input_datetime.torketrommel_start', 'timestamp')) |timestamp_custom('%H:%M:%S', false) }}"
-
-timer:
-  paminnsenere_vask:
-    duration: '00:30:00'
-
-input_datetime:
-  vaskemaskin_start:
-    has_date: true
-    has_time: true
-  torketrommel_start:
-    has_date: true
-    has_time: true
+        entity_id: switch.vaskerom_vaskemaskin
+    - service: switch.turn_on
+      data:
+        entity_id: switch.vaskerom_torketrommel
+    - service: switch.turn_on
+      data:
+        entity_id: switch.hovedkran
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.home_kjellerstue
+        volume_level: '0.5'
+    - service: tts.google_say
+      entity_id: media_player.home_kjellerstue
+      data_template:
+        message: Velkommen hjem!
+        cache: false
+        language: 'no'
 
 input_boolean:
-  fan_triggered:
-    name: Avtrekksvifte På - Auto
-    icon: mdi:fan
+  inngangsdor_tid:
+    name: Velkomst tid
+    initial: off
+
+timer:
+  inngangsdor:
+    duration: '00:10:00'
