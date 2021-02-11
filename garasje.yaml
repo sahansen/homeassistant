@@ -1,4 +1,52 @@
 automation:
+  - alias: Yttergang - Åpne garasjeport via bryter
+    trigger:
+    - event_data:
+        entity_id: zwave.yttergang
+        scene_id: 1
+        scene_data: 0
+      event_type: zwave.scene_activated
+      platform: event
+    condition: []
+    action:
+      - service: cover.open_cover
+        data:
+          entity_id: cover.garage_door
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.home_kjellerstue
+          volume_level: '0.5'
+      - service: tts.google_say
+        entity_id: media_player.home_kjellerstue
+        data_template:
+          message: Åpner garasjeport
+          cache: false
+          language: 'no'
+
+  - alias: Yttergang - Lukk garasjeport via bryter
+    trigger:
+    - event_data:
+        entity_id: zwave.yttergang
+        scene_id: 3
+        scene_data: 0
+      event_type: zwave.scene_activated
+      platform: event
+    condition: []
+    action:
+      - service: cover.close_cover
+        data:
+          entity_id: cover.garage_door
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.home_kjellerstue
+          volume_level: '0.5'
+      - service: tts.google_say
+        entity_id: media_player.home_kjellerstue
+        data_template:
+          message: Lukker garasjeport
+          cache: false
+          language: 'no'
+
   - id: garasje_åpnet
     alias: 'Garasjeport åpnet'
     trigger:
@@ -36,7 +84,7 @@ automation:
       state: 'open'
     action:
       - service: tts.google_say
-        entity_id: media_player.home_spisestue
+        entity_id: media_player.home_spisestue, media_player.kjokken, media_player.home_kjellerstue
         data_template:
           message: Garasjeporten er enda åpen
           cache: false
@@ -61,12 +109,12 @@ automation:
         entity_id: cover.garage_door
 
   - id: garasjeport_varsel_ingen_hjemme
-    alias: 'Motorvarmer varsel - Ingen hjemme'
+    alias: 'Garasjeport varsel - Ingen hjemme'
     trigger:
       - platform: state
         entity_id: binary_sensor.noen_hjemme
         to: 'off'
-        for: 00:05:00
+        for: 00:01:00
     condition:
       condition: state
       entity_id: cover.garage_door
@@ -74,17 +122,50 @@ automation:
     action:
       - data:
           message: Garasjeport er åpen selvom ingen er hjemme!
-        service: notify.mobile_app_nina_tlf
+        service: notify.mobile_app_clt_l29
       - data:
           message: Garasjeport er åpen selvom ingen er hjemme!
         service: notify.mobile_app_sm_g988b
+
+  - id: '1597849634000'
+    alias: Garasjelys - Av
+    description: Garasjelys av ved lukking av port
+    trigger:
+    - entity_id: sensor.garasje_port
+      for: '2'
+      from: '22'
+      platform: state
+      to: '23'
+    condition: []
+    action:
+    - device_id: 7c25b47d13ad4c928cd174d5390f052d
+      domain: switch
+      entity_id: switch.garasjelys_bryter
+      type: turn_off
+    mode: single
+
+  - id: '1597849559523'
+    alias: Garasjelys - På
+    description: Garasjelys på ved åpning av port
+    trigger:
+    - entity_id: sensor.garasje_port
+      from: '23'
+      platform: state
+      to: '22'
+    condition: []
+    action:
+    - device_id: 7c25b47d13ad4c928cd174d5390f052d
+      domain: switch
+      entity_id: switch.garasjelys_bryter
+      type: turn_on
+    mode: single
 
 cover:
   - platform: template
     covers:
       garage_door:
         friendly_name: "Garasjeport"
-        value_template: '{{ is_state("binary_sensor.garasje_garasjeport_145", "on") }}'
+        value_template: "{{ states('sensor.garasje_port')|float < 23 }}"
         open_cover:
           service: script.open_garage_door
         close_cover:
@@ -92,110 +173,35 @@ cover:
         stop_cover:
           service: script.stop_garage_door
         icon_template: >-
-          {% if is_state('binary_sensor.garasje_garasjeport_145', 'off') %}
+          {% if is_state('sensor.garasje_port', '23') %}
           mdi:garage
           {% else %}
           mdi:garage-open
           {% endif %}
 
-sensor:
-  - platform: mqtt
-    state_topic: "torquephonebarometer"
-    unit_of_measurement: mbar
-    name: Bil - Barometer
-
-  - platform: mqtt
-    state_topic: "torquevehiclerpm"
-    unit_of_measurement: rpm
-    name: Bil - RPM
-
-  - platform: mqtt
-    state_topic: "torquevehiclemafrate"
-    unit_of_measurement: g/s
-    name: Bil - Mass Air Flow Rate
-
-  - platform: mqtt
-    state_topic: "torquevehiclecoolant"
-    unit_of_measurement: grader
-    name: Bil - Kjøleveske Temp
-
-  - platform: mqtt
-    state_topic: "torqueobdvoltage"
-    unit_of_measurement: V
-    name: Bil - Spenning
-
-  - platform: mqtt
-    state_topic: "torquevehiclevacuum"
-    unit_of_measurement: psi
-    name: Bil - Vacuum
-
-  - platform: mqtt
-    state_topic: "torquevehiclespeed"
-    unit_of_measurement: km/t
-    name: Bil - OBD Hastighet
-
-  - platform: mqtt
-    state_topic: "torquephonespeed"
-    unit_of_measurement: km/t
-    name: Bil - GPS Hastighet
-
-  - platform: mqtt
-    state_topic: "torquevehicleintake"
-    unit_of_measurement: grader
-    name: Bil - Inntaks temp
-
 script:
   open_garage_door:
     sequence:
     - data:
-        entity_id: switch.garasje_portapner_220
+        entity_id: switch.garasje_portapner
       service: switch.turn_on
-    - delay: 00:00:02
-    - data:
-        entity_id: switch.garasje_portapner_220
-      service: switch.turn_off
     - data:
         message: Garasjeport åpnet via smarthus
-      service: notify.mobile_app_nina_tlf
+      service: notify.mobile_app_clt_l29
     - data:
         message: Garasjeport åpnet via smarthus
       service: notify.mobile_app_sm_g988b
   close_garage_door:
     sequence:
     - data:
-        entity_id: switch.garasje_portapner_220
+        entity_id: switch.garasje_portapner
       service: switch.turn_on
-    - delay: 00:00:02
-    - data:
-        entity_id: switch.garasje_portapner_220
-      service: switch.turn_off
   stop_garage_door:
     sequence:
     - data:
-        entity_id: switch.garasje_portapner_220
+        entity_id: switch.garasje_portapner
       service: switch.turn_on
-    - delay: 00:00:02
-    - data:
-        entity_id: switch.garasje_portapner_220
-      service: switch.turn_off
-  tilt_garage_door:
-    sequence:
-    - service: switch.turn_on
-      data:
-        entity_id: switch.garasje_portapner_220
-    - delay: 00:00:02
-    - service: switch.turn_off
-      data:
-        entity_id: switch.garasje_portapner_220
-    - delay: 00:00:02
-    - service: switch.turn_on
-      data:
-        entity_id: switch.garasje_portapner_220
-    - delay: 00:00:02
-    - service: switch.turn_off
-      data:
-        entity_id: switch.garasje_portapner_220
-        
+
 timer:    
   garasjeport:
     duration: '00:30:00'
