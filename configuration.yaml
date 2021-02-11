@@ -1,67 +1,24 @@
 homeassistant:
   customize: !include customize.yaml
-  packages:
-    ams: !include ams.yaml
-    belysning: !include belysning.yaml
-    diag: !include diag.yaml
-    garasje: !include garasje.yaml
-    kjokken: !include kjokken.yaml
-    heater: !include heater.yaml
-    nina: !include nina.yaml
-    oppdatering: !include oppdatering.yaml
-    soppel: !include soppel.yaml
-    tlf: !include tlf.yaml
-    varsling: !include varsling.yaml
-    vaskerom: !include vaskerom.yaml
-    vekkerklokke: !include vekkerklokke.yaml
-    velkomst: !include velkomst.yaml
-    wifi: !include wifi.yaml
+  packages: !include_dir_named packages
 
 frontend:
   themes: !include_dir_merge_named themes
 
-hacs:
-  token: !secret hacs
+default_config:
 
-history:
-map:
-sun:  
-person:
-system_health:
-config:
-cloud:
+group: !include groups.yaml 
+automation: !include automations.yaml 
+script: !include scripts.yaml 
+sensor: !include sensors.yaml
+
 recorder:
   db_url: !secret sql
   exclude:
     domains:
       - automation
       - timer
-    entities:
-      - sensor.vaskemaskin_tid
-      - sensor.torketrommel_tid
-      - sensor.time
-      - sensor.tog_levanger_stasjon
-      - sensor.tog_levanger_stasjon_platform_1
-      - sensor.tog_levanger_stasjon_platform_2
-      - sensor.tog_levanger_stasjon_platform_77902
-      - sensor.tog_levanger_stasjon_platform_77903
-      - sensor.onhub_bytes_received
-      - sensor.onhub_bytes_sent
-      - sensor.onhub_kbyte_sec_received
-      - sensor.onhub_kbyte_sec_sent
-      - sensor.onhub_packets_received
-      - sensor.onhub_packets_sec_received
-      - sensor.onhub_packets_sec_sent
-      - sensor.onhub_packets_sent
-      - sensor.aktiv_effekt
-      - sensor.mqtt_oppetid
-      - sensor.reaktiv_effekt
-
-updater: 
-discovery: 
-conversation: 
-mobile_app:
-
+      
 tts:
   platform: google_translate
   cache: true
@@ -69,54 +26,101 @@ tts:
   time_memory: 300
   service_name: google_say
   language: 'no'
-  
-breaking_changes: 
+
 air_quality:
   - platform: norway_air
-  
+
 binary_sensor:
-  - platform: huesensor
   - platform: template
     sensors:
       noen_hjemme:
         value_template: >-
-          {{ is_state('device_tracker.life360_nina', 'home')
-          or is_state('device_tracker.life360_stig_are', 'home') }}
-  
-group: !include groups.yaml 
-automation: !include automations.yaml 
-script: !include scripts.yaml 
-sensor: !include sensors.yaml
+          {{ is_state('device_tracker.***', 'home')
+          or is_state('device_tracker.***', 'home') }}
 
-tibber:
-  access_token: !secret tibber
+zwave:
+  usb_path: /dev/serial/by-id/usb-0658_0200-if00
+  config_path: /config/z-wave/open-zwave/config
+  network_key: !secret zwave
+
+camera:
+  - platform: generic
+    still_image_url: **
+    stream_source: **
+    username: **
+    password: !secret stdpass
+    name: Inngangsdør
+
+  - platform: xiaomi_cloud_map_extractor
+    host: 192.168.86.22
+    token: !secret xiaomi
+    username: !secret email
+    password: !secret stdpass
+    colors:
+      color_map_inside: [32, 115, 185]
+      color_map_outside: [19, 87, 148]
+      color_map_wall: [100, 196, 254]
+      color_map_wall_v2: [93, 109, 126]
+      color_grey_wall: [93, 109, 126]
+      color_path: [147, 194, 238]
+      color_goto_path: [0, 255, 0]
+      color_predicted_path: [255, 255, 0, 0]
+      color_zones: [0xAD, 0xD8, 0xFF, 0x8F]
+      color_zones_outline: [0xAD, 0xD8, 0xFF]
+      color_virtual_walls: [255, 0, 0]
+      color_no_go_zones: [255, 33, 55, 127]
+      color_no_go_zones_outline: [255, 0, 0]
+      color_no_mop_zones: [163, 130, 211, 127]
+      color_no_mop_zones_outline: [163, 130, 211]
+      color_charger: [0x66, 0xfe, 0xda, 0x7f]
+      color_robo: [75, 235, 149]
+      color_unknown: [0, 0, 0]
+      color_scan: [0xDF, 0xDF, 0xDF]
+    room_colors:
+      1: [240, 178, 122]
+      2: [133, 193, 233]
+      3: [217, 136, 128]
+      4: [52, 152, 219]
+      5: [205, 97, 85]
+      6: [243, 156, 18]
+    draw:
+      - charger
+      - path
+      - goto_path
+      - predicted_path
+      - no_go_zones
+      - no_mopping_zones
+      - vacuum_position
+      - virtual_walls
+      - zones
+    attributes:
+      - calibration_points
+      - charger
+      - goto
+      - goto_path
+      - goto_predicted_path
+      - image
+      - is_empty
+      - map_name
+      - no_go_areas
+      - no_mopping_areas
+      - obstacles
+      - path
+      - room_numbers
+      - rooms
+      - vacuum_position
+      - vacuum_room
+      - walls
+      - zones
+    scan_interval:
+      seconds: 10
+    auto_update: true
 
 media_player:    
   - platform: philips_2014
     name: Philips TV
     host: 192.168.86.69
     mac: 30:10:B3:AF:9C:B1
-
-  - platform: xboxone
-    device: !secret xbox
-    name: Xbox One
-
-  - platform: denonavr
-    host: 192.168.86.157
-
-fibaro:
-  gateways:
-    - url: http://192.168.86.49/api/
-      username: !secret email
-      password: !secret stdpass
-      plugins: true
-
-notify:
-  - platform: html5
-    name: oss
-    vapid_pub_key: !secret notify_pub
-    vapid_prv_key: !secret notify_prv
-    vapid_email: !secret email
 
 google:
   client_id: !secret google_client_id
@@ -128,7 +132,7 @@ netatmo:
 
 life360:
   accounts:
-    username: stig-are@sahansen.com
+    username: **
     password: !secret mqtt
   show_as_state:
     - driving
@@ -137,6 +141,10 @@ life360:
 climate:
   - platform: sensibo
     api_key: !secret sensiboapi
+
+automower:
+  username: !secret email
+  password: !secret stdpass
 
 vacuum:
   - platform: xiaomi_miio
@@ -147,38 +155,13 @@ home_connect:
   client_id: !secret homeconnect_id
   client_secret: !secret homeconnect_secret
 
-camera:
-  - platform: generic
-    still_image_url: http://192.168.86.97/tmpfs/auto.jpg
-    stream_source: rtsp://192.168.86.97:554/11
-    username: admin
-    password: !secret stdpass
-    name: Inngangsdør
+spotify:
+  client_id: spotify_client_id
+  client_secret: spotify_secret
 
-customizer:
-  custom_ui: local
-
-speedtestdotnet:
-  scan_interval:
-    hours: 5
-  monitored_conditions:
-    - ping
-    - download
-    - upload
-
-#remote:
-#  - platform: huesensor
-#  - platform: harmony
-#    name: harmony_hub
-#    host: 192.168.86.33
-
-#spotcast:
-#  username: !secret spotify_id
-#  password: !secret mqtt
+tibber:
+  access_token: !secret tibber
 
 withings:
   client_id: !secret withings_id
   client_secret: !secret withings_sec
-  profiles:
-    - Stig-Are
-    - Nina
