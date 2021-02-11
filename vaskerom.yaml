@@ -1,10 +1,12 @@
 automation:
 - alias: Vaskemaskin - Endre status til vasker ved høyt strømtrekk
-  initial_state: 'on'
+  initial_state: true
   trigger:
   - platform: numeric_state
-    entity_id: sensor.forbruk_vaskemaskin
+    entity_id: sensor.vaskerom_vaskemaskin_forbruk
     above: 5
+    for:
+      seconds: 20
   condition:
   - condition: state
     entity_id: input_select.vaskemaskin_status
@@ -20,10 +22,10 @@ automation:
       datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
 
 - alias: Vaskemaskin - Endre status til standby ved ingen strømtrekk
-  initial_state: 'on'
+  initial_state: true
   trigger:
   - platform: numeric_state
-    entity_id: sensor.forbruk_vaskemaskin
+    entity_id: sensor.vaskerom_vaskemaskin_forbruk
     below: 1
   condition:
   - condition: state
@@ -35,18 +37,23 @@ automation:
       entity_id: input_select.vaskemaskin_status
       option: Standby
 - alias: Vaskemaskin - Endre status til ferdig ved redusert strømforbruk
-  initial_state: 'on'
+  initial_state: true
   trigger:
-  - below: '4'
-    above: '1'
+  - below: 4
+    above: 1
     for:
       seconds: 3
-    entity_id: sensor.forbruk_vaskemaskin
+    entity_id: sensor.vaskerom_vaskemaskin_forbruk
     platform: numeric_state
   condition:
-  - condition: state
-    entity_id: input_select.vaskemaskin_status
-    state: Vasker
+    condition: and
+    conditions:
+    - condition: time
+      after: '06:30:00'
+      before: '22:00:00'
+    - condition: state
+      entity_id: input_select.vaskemaskin_status
+      state: Vasker
   action:
   - service: tts.google_say
     entity_id: media_player.home_spisestue
@@ -65,7 +72,7 @@ automation:
         actions:
           - action: "paminnsenere_vask"
             title: "Utsett 30 min."
-    service: notify.mobile_app_nina_tlf
+    service: notify.mobile_app_clt_l29
   - data:
       title: Vaskerom
       message: Vaskemaskin e ferdig!
@@ -91,7 +98,7 @@ automation:
       event_data:
         entity_id: timer.paminnsenere_vask
   action:
-  - service: notify.mobile_app_nina_tlf
+  - service: notify.mobile_app_clt_l29
     data:
       title: Vaskerom
       message: "Tøm vaskemaskin"
@@ -120,11 +127,13 @@ automation:
     entity_id: sensor.vaskemaskin_tid
 
 - alias: Tørketrommel - Endre status til tørker ved høyt strømtrekk
-  initial_state: 'on'
+  initial_state: true
   trigger:
   - platform: numeric_state
-    entity_id: sensor.forbruk_torketrommel
-    above: 10
+    entity_id: sensor.vaskerom_torketrommel_forbruk
+    above: 500
+    for:
+      seconds: 10
   condition:
   - condition: state
     entity_id: input_select.torketrommel_status
@@ -138,11 +147,12 @@ automation:
     entity_id: input_datetime.torketrommel_start
     data_template:
       datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
 - alias: Tørketrommel - Endre status til standby ved redusert strømforbruk
-  initial_state: 'on'
+  initial_state: true
   trigger:
-  - below: '3'
-    entity_id: sensor.forbruk_torketrommel
+  - below: 3
+    entity_id: sensor.vaskerom_torketrommel_forbruk
     platform: numeric_state
   condition:
   - condition: state
@@ -162,11 +172,12 @@ automation:
   - data:
       message: Tørketrommeln e ferdig!
       title: Vaskerom
-    service: notify.mobile_app_nina_tlf
+    service: notify.mobile_app_clt_l29
   - data:
       message: Tørketrommeln e ferdig!
       title: Vaskerom
     service: notify.mobile_app_sm_g988b
+
 - alias: Tørketrommel - Brukt tid
   trigger:
     platform: time_pattern
@@ -189,7 +200,7 @@ automation:
   action:
   - service: switch.turn_on
     data:
-      entity_id: switch.vaskerom_avtrekksvifte_175
+      entity_id: switch.vaskerom_avtrekksvifte
 
 - alias: Tørketrommel - Stopp vifte
   trigger:
@@ -203,59 +214,57 @@ automation:
   action:
   - service: switch.turn_off
     data:
-      entity_id: switch.vaskerom_avtrekksvifte_175
-
-- alias: brannalarm vaskerom
-  trigger:
-  - entity_id: binary_sensor.vaskerom_roykvasler_36
-    platform: state
-    from: 'off'
-    to: 'on'
-  condition: []
-  action:
-  - service: switch.turn_off
-    data:
-      entity_id: switch.vaskerom_torketrommel
-  - service: switch.turn_off
-    data:
-      entity_id: switch.vaskerom_vaskemaskin
-  - service: switch.turn_on
-    data:
-      entity_id: switch.vaskerom_avtrekksvifte_175
+      entity_id: switch.vaskerom_avtrekksvifte
 
 - id: '1549675365377'
   alias: Avtrekksvifte Auto På
   trigger:
-  - above: '52'
-    entity_id: sensor.vaskerom_fuktighet_136
+  - above: 52
+    entity_id: sensor.vaskerom_multisensor_fuktighet
     platform: numeric_state
   condition: []
   action:
   - data:
-      entity_id: switch.vaskerom_avtrekksvifte_175
+      entity_id: switch.vaskerom_avtrekksvifte
     service: switch.turn_on
   - entity_id: input_boolean.fan_triggered
     service: input_boolean.turn_on
 
 - alias: Avtrekksvifte Auto Av
   trigger:
-  - below: '48'
-    entity_id: sensor.vaskerom_fuktighet_136
+  - below: 48
+    entity_id: sensor.vaskerom_multisensor_fuktighet
     platform: numeric_state
+    for:
+      minutes: 15
   condition:
   - condition: state
     entity_id: input_boolean.fan_triggered
     state: 'on'
   action:
   - data:
-      entity_id: switch.vaskerom_avtrekksvifte_175
+      entity_id: switch.vaskerom_avtrekksvifte
     service: switch.turn_off
   - entity_id: input_boolean.fan_triggered
     service: input_boolean.turn_off
 
-- alias: Avtrekksvifte Av - Manuell
+- alias: Avtrekksvifte - Manuell på
   trigger:
-  - entity_id: switch.vaskerom_avtrekksvifte_175
+  - event_data:
+      entity_id: zwave.toalett_vifte_knapp
+      scene_id: 1
+      scene_data: 0
+    event_type: zwave.scene_activated
+    platform: event
+  condition: []
+  action:
+    - service: switch.turn_on
+      data:
+        entity_id: switch.vaskerom_avtrekksvifte
+
+- alias: Avtrekksvifte av - Manuell
+  trigger:
+  - entity_id: switch.vaskerom_avtrekksvifte
     platform: state
     from: 'off'
     to: 'on'
@@ -267,7 +276,7 @@ automation:
     state: 'off'
   action:
   - data:
-      entity_id: switch.vaskerom_avtrekksvifte_175
+      entity_id: switch.vaskerom_avtrekksvifte
     service: switch.turn_off
 
 input_select:
@@ -288,40 +297,10 @@ input_select:
 sensor:
 - platform: template
   sensors:
-    forbruk_avtrekksvifte:
-      friendly_name: "Avtrekksvifte"
-      unit_of_measurement: 'W'
-      value_template: "{{ state_attr('switch.vaskerom_avtrekksvifte_175', 'current_power_w') }}"
-
-    batteri_vaskerom:
-      friendly_name: "Vaskerom"
-      unit_of_measurement: '%'
-      value_template: "{{ state_attr('binary_sensor.vaskerom_35_0_1_37', 'battery_level') }}"
-      
-    batteri_vaskerommulti:
-      friendly_name: "Vaskerom - Multisensor"
-      unit_of_measurement: '%'
-      value_template: "{{ state_attr('binary_sensor.vaskerom_bevegelse_133', 'battery_level') }}"
-      
-    batteri_vaskeromlekk:
-      friendly_name: "Vaskerom"
-      unit_of_measurement: '%'
-      value_template: "{{ state_attr('binary_sensor.vaskerom_lekkasje_33', 'battery_level') }}"
-
-    forbruk_vaskemaskin:
-      friendly_name: "Vaskemaskin"
-      unit_of_measurement: 'W'
-      value_template: "{{ state_attr('switch.vaskerom_vaskemaskin', 'current_power_w') }}"
-
-    forbruk_torketrommel:
-      friendly_name: "Tørketrommel"
-      unit_of_measurement: 'W'
-      value_template: "{{ state_attr('switch.vaskerom_torketrommel', 'current_power_w') }}"
-
     forbruk_vaskerom:
       friendly_name: "Vaskerom"
       unit_of_measurement: 'W'
-      value_template: "{{ state_attr('switch.vaskerom_vaskemaskin', 'current_power_w') + state_attr('switch.vaskerom_torketrommel', 'current_power_w') + state_attr('switch.vaskerom_avtrekksvifte_175', 'current_power_w') }}"
+      value_template: "{{ (states.sensor.vaskerom_vaskemaskin_forbruk.state | float) + (states.sensor.vaskerom_torketrommel_forbruk.state | float) + (states.sensor.vaskerom_avtrekksvifte_forbruk.state | float) }}"
 
     vaskemaskin_tid:
       value_template: "{{ (as_timestamp(now()) - state_attr('input_datetime.vaskemaskin_start', 'timestamp')) |timestamp_custom('%H:%M:%S', false) }}"
