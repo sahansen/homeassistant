@@ -1,0 +1,33 @@
+entities:
+  - entity: input_boolean.motorvarmer_tidsinnstilling
+    name: Tidsinnstilling
+  - entity: input_boolean.motorvarmer_ukedag
+    name: Kun ukedager
+  - entity: sensor.motorvarmer_avreisetid
+    name: Avreisetid
+  - entity: input_number.motorvarmer_timer
+    name: Time
+  - entity: input_number.motorvarmer_minutt
+    name: Minutt
+  - entity: input_number.motorvarmer_utetemp_3t_for
+    name: Temp. 3 timer før
+  - entity: sensor.ute_sensor_temperatur
+    name: Temperatur ute nå
+  - entity: sensor.bilen_temperatur
+    name: Temperatur i bilen
+  - entity: sensor.motorvarmer_avreisetid
+    icon: 'mdi:clock'
+  - entity: sensor.motorvarmer_start_tid
+  - entity: sensor.motorvarmer_oppvarmingstid
+  - entities:
+      - entity: sensor.garasje_motorvarmer_forbruk
+        name: Forbruk nå
+    entity: switch.garasje_motorvarmer
+    name: Motorvarmer
+    secondary_info: null
+    toggle: true
+    type: 'custom:multiple-entity-row'
+show_header_toggle: false
+title: Motorvarmer
+type: entities
+state_color: true
