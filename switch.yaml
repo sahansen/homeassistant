@@ -59,7 +59,7 @@ action:
           target: !input 'lights'
           data:
             transition: 1
-            brightness_step_pct: 50
+            brightness_step_pct: 10
         - delay: 0.5
   - conditions:
     - '{{ command == ''brightness_move_down'' }}'
@@ -73,5 +73,5 @@ action:
           target: !input 'lights'
           data:
             transition: 1
-            brightness_step_pct: -5
+            brightness_step_pct: -10
         - delay: 0.5
