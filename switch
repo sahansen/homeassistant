@@ -1,0 +1,77 @@
+blueprint:
+  name: '[Z2M] Generic on/off w/dim button'
+  description: Blueprint for switch (On/Off and dim)
+  domain: automation
+  source_url: https://
+  input:
+    remote:
+      name: Remote
+      description: Device to use
+      selector:
+        entity:
+          integration: mqtt
+          domain: sensor
+    lights:
+      name: Lights
+      description: Light(s) to control when using default light actions
+      default:
+        entity_id: none
+      selector:
+        target:
+          entity:
+            domain: light
+mode: restart
+max_exceeded: silent
+trigger:
+- platform: state
+  entity_id: !input 'remote'
+  attribute: action
+variables:
+  command: '{{ trigger.to_state.state }}'
+condition:
+- condition: template
+  value_template: '{{ command != ''''}}'
+action:
+- choose:
+  - conditions:
+    - '{{ command == ''on'' }}'
+    sequence:
+      - service: light.turn_on
+        target: !input 'lights'
+        data:
+          transition: 1
+  - conditions:
+    - '{{ command == ''off'' }}'
+    sequence:
+      - service: light.turn_off
+        target: !input 'lights'
+        data:
+          transition: 1
+  - conditions:
+    - '{{ command == ''brightness_move_up'' }}'
+    sequence:
+      repeat:
+        while:
+        - condition: template
+          value_template: '{{ repeat.index < 10 }}'
+        sequence:
+        - service: light.turn_on
+          target: !input 'lights'
+          data:
+            transition: 1
+            brightness_step_pct: 50
+        - delay: 0.5
+  - conditions:
+    - '{{ command == ''brightness_move_down'' }}'
+    sequence:
+      repeat:
+        while:
+        - condition: template
+          value_template: '{{ repeat.index < 10 }}'
+        sequence:
+        - service: light.turn_on
+          target: !input 'lights'
+          data:
+            transition: 1
+            brightness_step_pct: -5
+        - delay: 0.5
