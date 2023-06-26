@@ -40,6 +40,7 @@ action:
         target: !input 'lights'
         data:
           transition: 1
+          brightness_pct: 50
   - conditions:
     - '{{ command == ''off'' }}'
     sequence:
