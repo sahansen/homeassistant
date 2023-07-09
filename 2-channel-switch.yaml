@@ -1,6 +1,6 @@
 blueprint:
   name: '[Z2M] Generic 2-channel on/off w/dim'
-  description: Blueprint for switch (On/Off and dim)
+  description: Blueprint for 2-channel switch (On/Off and dim)
   domain: automation
   source_url: https://raw.githubusercontent.com/sahansen/homeassistant/master/2-channel-switch.yaml
   input:
