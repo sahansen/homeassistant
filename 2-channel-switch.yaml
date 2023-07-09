@@ -48,7 +48,7 @@ action:
       - service: light.turn_on
         target: !input 'lights_upper'
         data:
-          transition: 1
+          transition: 0.5
           brightness_pct: 50
   - conditions:
     - '{{ command == ''off_l1'' }}'
@@ -56,7 +56,7 @@ action:
       - service: light.turn_off
         target: !input 'lights_upper'
         data:
-          transition: 1
+          transition: 0.5
   - conditions:
     - '{{ command == ''brightness_move_up_l1'' }}'
     sequence:
@@ -68,7 +68,7 @@ action:
         - service: light.turn_on
           target: !input 'lights_upper'
           data:
-            transition: 1
+            transition: 0.5
             brightness_step_pct: 10
         - delay: 0.5
   - conditions:
@@ -82,7 +82,7 @@ action:
         - service: light.turn_on
           target: !input 'lights_upper'
           data:
-            transition: 1
+            transition: 0.5
             brightness_step_pct: -10
         - delay: 0.5
   - conditions:
@@ -91,7 +91,7 @@ action:
       - service: light.turn_on
         target: !input 'lights_lower'
         data:
-          transition: 1
+          transition: 0.5
           brightness_pct: 50
   - conditions:
     - '{{ command == ''off_l2'' }}'
@@ -99,7 +99,7 @@ action:
       - service: light.turn_off
         target: !input 'lights_lower'
         data:
-          transition: 1
+          transition: 0.5
   - conditions:
     - '{{ command == ''brightness_move_up_l2'' }}'
     sequence:
@@ -111,7 +111,7 @@ action:
         - service: light.turn_on
           target: !input 'lights_lower'
           data:
-            transition: 1
+            transition: 0.5
             brightness_step_pct: 10
         - delay: 0.5
   - conditions:
@@ -125,6 +125,6 @@ action:
         - service: light.turn_on
           target: !input 'lights_lower'
           data:
-            transition: 1
+            transition: 0.5
             brightness_step_pct: -10
         - delay: 0.5
