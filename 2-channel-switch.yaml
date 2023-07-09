@@ -28,8 +28,7 @@ blueprint:
       selector:
         target:
           entity:
-            domain: light    
-
+            domain: light
 mode: restart
 max_exceeded: silent
 trigger:
