@@ -11,7 +11,7 @@ blueprint:
         entity:
           integration: mqtt
           domain: sensor
-    lights1:
+    lights:
     - name: Lights1
       description: Light(s) to control when using upper buttons
       default:
@@ -20,7 +20,15 @@ blueprint:
         target:
           entity:
             domain: light
-
+    lights:  
+    - name: Lights2
+      description: Light(s) to control when using lower buttons
+      default:
+        entity_id: none
+      selector:
+        target:
+          entity:
+            domain: light
 mode: restart
 max_exceeded: silent
 trigger:
