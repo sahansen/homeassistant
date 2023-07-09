@@ -20,7 +20,7 @@ blueprint:
         target:
           entity:
             domain: light
-- name: Lights2
+    - name: Lights2
       description: Light(s) to control when using lower buttons
       default:
         entity_id: none
