@@ -20,15 +20,6 @@ blueprint:
         target:
           entity:
             domain: light
-    lights2:  
-    - name: Lights2
-      description: Light(s) to control when using lower buttons
-      default:
-        entity_id: none
-      selector:
-        target:
-          entity:
-            domain: light
 
 mode: restart
 max_exceeded: silent
