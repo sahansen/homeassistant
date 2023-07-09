@@ -11,8 +11,8 @@ blueprint:
         entity:
           integration: mqtt
           domain: sensor
-    lights1:
-      name: Lights1
+    lights_upper:
+      name: lights_upper
       description: Light(s) to control when using upper buttons
       default:
         entity_id: none
@@ -20,8 +20,8 @@ blueprint:
         target:
           entity:
             domain: light
-    lights2:
-      name: Lights2
+    lights_lower:
+      name: lights_lower
       description: Light(s) to control when using default light actions
       default:
         entity_id: none
@@ -46,7 +46,7 @@ action:
     - '{{ command == ''on_l1'' }}'
     sequence:
       - service: light.turn_on
-        target: !input 'lights1'
+        target: !input 'lights_upper'
         data:
           transition: 1
           brightness_pct: 50
@@ -54,7 +54,7 @@ action:
     - '{{ command == ''off_l1'' }}'
     sequence:
       - service: light.turn_off
-        target: !input 'lights1'
+        target: !input 'lights_upper'
         data:
           transition: 1
   - conditions:
@@ -66,7 +66,7 @@ action:
           value_template: '{{ repeat.index < 10 }}'
         sequence:
         - service: light.turn_on
-          target: !input 'lights1'
+          target: !input 'lights_upper'
           data:
             transition: 1
             brightness_step_pct: 10
@@ -80,7 +80,7 @@ action:
           value_template: '{{ repeat.index < 10 }}'
         sequence:
         - service: light.turn_on
-          target: !input 'lights1'
+          target: !input 'lights_upper'
           data:
             transition: 1
             brightness_step_pct: -10
@@ -89,7 +89,7 @@ action:
     - '{{ command == ''on_l2'' }}'
     sequence:
       - service: light.turn_on
-        target: !input 'lights2'
+        target: !input 'lights_lower'
         data:
           transition: 1
           brightness_pct: 50
@@ -97,7 +97,7 @@ action:
     - '{{ command == ''off_l2'' }}'
     sequence:
       - service: light.turn_off
-        target: !input 'lights2'
+        target: !input 'lights_lower'
         data:
           transition: 1
   - conditions:
@@ -109,7 +109,7 @@ action:
           value_template: '{{ repeat.index < 10 }}'
         sequence:
         - service: light.turn_on
-          target: !input 'lights2'
+          target: !input 'lights_lower'
           data:
             transition: 1
             brightness_step_pct: 10
@@ -123,7 +123,7 @@ action:
           value_template: '{{ repeat.index < 10 }}'
         sequence:
         - service: light.turn_on
-          target: !input 'lights2'
+          target: !input 'lights_lower'
           data:
             transition: 1
             brightness_step_pct: -10
