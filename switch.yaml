@@ -36,7 +36,7 @@ action:
   - conditions:
     - '{{ command == ''on'' }}'
     sequence:
-      - service: light.turn_on
+      - service: light.toggle
         target: !input 'lights'
         data:
           transition: 1
@@ -44,7 +44,7 @@ action:
   - conditions:
     - '{{ command == ''off'' }}'
     sequence:
-      - service: light.turn_off
+      - service: light.toggle
         target: !input 'lights'
         data:
           transition: 1
